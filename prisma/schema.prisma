@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   Int                  @id @default(autoincrement())
+  name                 String
+  email                String               @unique
+  password             String
+  role                 String
+  pastorNetworks       NetworkObreiro[]     @relation("PastorNetworks")
+  obreiroNetworks      NetworkObreiro[]     @relation("ObreiroNetworks")
+  discipuladorNetworks NetworkDiscipulador[] @relation("DiscipuladorNetworks")
+  cells                Cell[]                @relation("CellDiscipulador")
+  reports              Report[]              @relation("ReportDiscipulador")
+
+  // Relações adicionais
+  obreiroCells         Cell[]                @relation("CellLeader")
+  reportsByObreiro     Report[]              @relation("ReportObreiro")
+  reportsByPastor      Report[]              @relation("ReportPastor")
+  
+  // Adicionando relação para NetworkDiscipulador
+  discipuladorNetworksFromObreiro NetworkDiscipulador[] @relation("ObreiroNetworks")
+}
+
+model NetworkObreiro {
+  id                   Int    @id @default(autoincrement())
+  pastorId             Int
+  obreiroId            Int
+  name                 String
+  quantityCells        Int
+  quantityMembers      Int
+  quantityAttendees    Int
+
+  pastor               User @relation("PastorNetworks", fields: [pastorId], references: [id])
+  obreiro              User @relation("ObreiroNetworks", fields: [obreiroId], references: [id])
+}
+
+model NetworkDiscipulador {
+  id                   Int    @id @default(autoincrement())
+  obreiroId           Int
+  discipuladorId      Int
+  name                 String
+  quantityMembers      Int
+  quantityAttendees    Int
+
+  obreiro             User @relation("ObreiroNetworks", fields: [obreiroId], references: [id])
+  discipulador        User @relation("DiscipuladorNetworks", fields: [discipuladorId], references: [id])
+}
+
+model Cell {
+  id                          Int       @id @default(autoincrement())
+  name                        String
+  discipuladorId             Int
+  leaderId                   Int
+  quantityMembers             Int
+  quantityAttendees           Int
+  date                        DateTime
+  address                     String
+  obreiroId                  Int
+  pastorId                   Int
+  quantityGuardAngels         Int
+  quantityNotConsolidated     Int
+  quantityMaturityCourse       Int
+  quantityCLTCourse           Int
+  quantityNotConsolidatedMeeting Int
+  cellPhase                   String
+  multiplicationDate          DateTime
+  discipulador                User     @relation("CellDiscipulador", fields: [discipuladorId], references: [id])
+  leader                      User     @relation("CellLeader", fields: [leaderId], references: [id])
+  reports                     Report[]
+}
+
+
+model Report {
+  id                   Int      @id @default(autoincrement())
+  cellId               Int
+  date                 DateTime
+  location             String
+  quantityMembers       Int
+  quantityAttendees    Int
+  quantityNotConsolidated Int
+  quantityGuardAngels   Int
+  discipuladorId       Int
+  obreiroId            Int
+  pastorId             Int
+
+  cell                 Cell     @relation(fields: [cellId], references: [id])
+  discipulador         User     @relation("ReportDiscipulador", fields: [discipuladorId], references: [id])
+  obreiro              User     @relation("ReportObreiro", fields: [obreiroId], references: [id])
+  pastor               User     @relation("ReportPastor", fields: [pastorId], references: [id])
+}

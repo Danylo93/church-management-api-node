@@ -6,6 +6,11 @@ export interface IUser {
   email: string;
   password: string;
   role: string;
+  obreiroNetwork?: string; 
+  discipuladorNetwork?: string; 
+  cellName?: string; 
+  address?: string; 
+  phone?: string; 
 }
 
 const prisma = new PrismaClient();

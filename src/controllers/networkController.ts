@@ -1,6 +1,48 @@
 import { Request, Response } from 'express';
 import * as networkService from '../services/networkService';
 
+// Rota para listar todos que são Obreiros
+export const listObreiros = async (req: Request, res: Response) => {
+  try {
+    const obreiros = await networkService.listObreiros();
+    res.status(200).json(obreiros);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve obreiros' });
+  }
+};
+
+// Rota para listar todos que são Discipuladores
+export const listDiscipuladores = async (req: Request, res: Response) => {
+  try {
+    const discipuladores = await networkService.listDiscipuladores();
+    res.status(200).json(discipuladores);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve discipuladores' });
+  }
+};
+
+// Rota para listar todos que são Líderes
+export const listLideres = async (req: Request, res: Response) => {
+  try {
+    const lideres = await networkService.listLideres();
+    res.status(200).json(lideres);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve líderes' });
+  }
+};
+
+// Rota para listar todos que são Pastores
+export const listPastores = async (req: Request, res: Response) => {
+  try {
+    const pastores = await networkService.listPastores();
+    res.status(200).json(pastores);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve líderes' });
+  }
+};
+
+
+// Outras rotas existentes
 export const createNetworkObreiro = async (req: Request, res: Response) => {
   const { pastorId, obreiroId, name, quantityCells, quantityMembers, quantityAttendees } = req.body;
   try {
@@ -163,7 +205,6 @@ export const listCellsByPastor = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to retrieve cells' });
   }
 };
-
 
 // Soma de membros e frequentadores por Líder de Célula
 export const sumByLeader = async (req: Request, res: Response) => {

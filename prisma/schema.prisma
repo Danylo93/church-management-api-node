@@ -13,6 +13,11 @@ model User {
   email                String               @unique
   password             String
   role                 String
+  obreiroNetwork       String?  // Opcional
+  discipuladorNetwork  String?  // Opcional
+  cellName             String?  // Opcional
+  address              String?  // Opcional
+  phone                String?  // Opcional
   pastorNetworks       NetworkObreiro[]     @relation("PastorNetworks")
   obreiroNetworks      NetworkObreiro[]     @relation("ObreiroNetworks")
   discipuladorNetworks NetworkDiscipulador[] @relation("DiscipuladorNetworks")

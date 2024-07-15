@@ -109,6 +109,30 @@ export const updateCell = async (
   });
 };
 
+export const listObreiros = async () => {
+  return await prisma.user.findMany({
+    where: { role: 'Obreiro' },
+  });
+};
+
+export const listDiscipuladores = async () => {
+  return await prisma.user.findMany({
+    where: { role: 'Discipulador' },
+  });
+};
+
+export const listLideres = async () => {
+  return await prisma.user.findMany({
+    where: { role: 'Líder' },
+  });
+};
+
+export const listPastores = async () => {
+  return await prisma.user.findMany({
+    where: {role: 'Pastor'}
+  })
+}
+
 export const getCellsByDiscipulador = async (discipuladorId: number) => {
   const cells = await prisma.cell.findMany({
     where: { discipuladorId },

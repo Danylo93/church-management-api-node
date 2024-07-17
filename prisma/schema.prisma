@@ -18,6 +18,8 @@ model User {
   cellName             String?  // Opcional
   address              String?  // Opcional
   phone                String?  // Opcional
+  photo                String?
+
   pastorNetworks       NetworkObreiro[]     @relation("PastorNetworks")
   obreiroNetworks      NetworkObreiro[]     @relation("ObreiroNetworks")
   discipuladorNetworks NetworkDiscipulador[] @relation("DiscipuladorNetworks")
@@ -94,6 +96,7 @@ model Report {
   discipuladorId       Int
   obreiroId            Int
   pastorId             Int
+  leaderId             Int
 
   cell                 Cell     @relation(fields: [cellId], references: [id])
   discipulador         User     @relation("ReportDiscipulador", fields: [discipuladorId], references: [id])

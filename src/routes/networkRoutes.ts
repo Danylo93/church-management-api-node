@@ -15,6 +15,8 @@ router.put('/cells/:cellId', networkController.updateCell);
 router.get('/cells/discipulador/:discipuladorId', networkController.listCellsByDiscipulador);
 router.get('/cells/obreiro/:networkObreiroId', networkController.listCellsByNetworkObreiro);
 router.get('/cells/pastor/:pastorId', networkController.listCellsByPastor);
+router.get('/cells/leader/:leaderId', networkController.listCellsByLeader);
+
 
 router.get('/qtd/members/leader/:leaderId', networkController.sumByLeader);
 router.get('/qtd/members/discipulador/:discipuladorId', networkController.sumByDiscipulador);

@@ -11,6 +11,7 @@ export interface IUser {
   cellName?: string; 
   address?: string; 
   phone?: string; 
+  photo?: string;
 }
 
 const prisma = new PrismaClient();

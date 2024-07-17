@@ -167,6 +167,18 @@ export const getCellsByPastor = async (pastorId: number) => {
   return cells;
 };
 
+export const getCellsByLeader = async (leaderId: number) => {
+  const cells = await prisma.cell.findMany({
+    where: {
+      leaderId,
+    },
+    include: {
+      leader: true,
+    },
+  });
+  return cells;
+};
+
 // Soma de membros e frequentadores por Líder de Célula
 export const sumMembersAndAttendeesByLeader = async (leaderId: number) => {
   const cells = await prisma.cell.findMany({

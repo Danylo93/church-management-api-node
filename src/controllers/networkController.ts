@@ -206,6 +206,20 @@ export const listCellsByPastor = async (req: Request, res: Response) => {
   }
 };
 
+
+export const listCellsByLeader = async (req: Request, res: Response) => {
+  const leaderId = parseInt(req.params.leaderId);
+  if (isNaN(leaderId)) {
+    return res.status(400).json({ error: 'Invalid leaderId' });
+  }
+
+  try {
+    const cells = await networkService.getCellsByLeader(leaderId);
+    res.status(200).json(cells);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve cells' });
+  }
+};
 // Soma de membros e frequentadores por Líder de Célula
 export const sumByLeader = async (req: Request, res: Response) => {
   const leaderId = parseInt(req.params.leaderId);

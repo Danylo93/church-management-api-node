@@ -279,3 +279,26 @@ export const sumByPastor = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to retrieve sums' });
   }
 };
+
+export const deleteCell = async (req: Request, res: Response) => {
+  const cellId = parseInt(req.params.cellId);
+
+  // Verificar se req.user está definido e possui um id
+ 
+
+
+  if (isNaN(cellId)) {
+    return res.status(400).json({ error: 'Invalid cellId' });
+  }
+
+  try {
+    await networkService.deleteCell(cellId);
+    res.status(204).send();
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'An unexpected error occurred' });
+    }
+  }
+};

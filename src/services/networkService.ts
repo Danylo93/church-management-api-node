@@ -226,3 +226,18 @@ export const sumMembersAndAttendeesByPastor = async (pastorId: number) => {
 
   return { totalMembers, totalAttendees };
 };
+
+export const deleteCell = async (cellId: number) => {
+  const cell = await prisma.cell.findUnique({
+    where: { id: cellId },
+  });
+
+  if (!cell) {
+    throw new Error('Cell not found');
+  }
+
+
+  await prisma.cell.delete({
+    where: { id: cellId },
+  });
+};

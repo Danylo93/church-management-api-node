@@ -2,7 +2,8 @@
 
 import { Router } from 'express';
 import * as networkController from '../controllers/networkController';
-import { createNetworkObreiro, createNetworkDiscipulador, createCell } from '../controllers/networkController';
+import { createNetworkObreiro, createNetworkDiscipulador, createCell, deleteCell } from '../controllers/networkController';
+import { authMiddleware } from '../middleware/authMiddleware';
 
 const router = Router();
 
@@ -16,6 +17,9 @@ router.get('/cells/discipulador/:discipuladorId', networkController.listCellsByD
 router.get('/cells/obreiro/:networkObreiroId', networkController.listCellsByNetworkObreiro);
 router.get('/cells/pastor/:pastorId', networkController.listCellsByPastor);
 router.get('/cells/leader/:leaderId', networkController.listCellsByLeader);
+
+router.delete('/cells/:cellId', deleteCell);
+
 
 
 router.get('/qtd/members/leader/:leaderId', networkController.sumByLeader);

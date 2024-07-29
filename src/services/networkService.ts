@@ -179,6 +179,32 @@ export const getCellsByLeader = async (leaderId: number) => {
   return cells;
 };
 
+
+
+export const listRecentCellsByLeader = async (leaderId: number) => {
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const cells = await prisma.cell.findMany({
+    where: {
+      leaderId: leaderId,
+      date: {
+        gte: sevenDaysAgo,
+      },
+    },
+    select: {
+      quantityMembers: true,
+      quantityAttendees: true,
+    },
+  });
+
+  const totalMembers = cells.reduce((sum, cell) => sum + cell.quantityMembers, 0);
+  const totalAttendees = cells.reduce((sum, cell) => sum + cell.quantityAttendees, 0);
+
+  return { totalMembers, totalAttendees };
+};
+
+
 // Soma de membros e frequentadores por Líder de Célula
 export const sumMembersAndAttendeesByLeader = async (leaderId: number) => {
   const cells = await prisma.cell.findMany({

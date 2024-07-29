@@ -2,7 +2,7 @@
 
 import { Router } from 'express';
 import * as networkController from '../controllers/networkController';
-import { createNetworkObreiro, createNetworkDiscipulador, createCell, deleteCell } from '../controllers/networkController';
+import { createNetworkObreiro, createNetworkDiscipulador, createCell, deleteCell, listRecentCellsByLeader } from '../controllers/networkController';
 import { authMiddleware } from '../middleware/authMiddleware';
 
 const router = Router();
@@ -19,6 +19,8 @@ router.get('/cells/pastor/:pastorId', networkController.listCellsByPastor);
 router.get('/cells/leader/:leaderId', networkController.listCellsByLeader);
 
 router.delete('/cells/:cellId', deleteCell);
+
+router.get('/recent-cells-by-leader/:leaderId', networkController.listRecentCellsByLeader);
 
 
 

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { updateUser, deleteUser, getUser, listUsers } from '../controllers/userController';
+import { updateUser, deleteUser, getUser, listUsers, getProfile } from '../controllers/userController';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { roleMiddleware } from '../middleware/roleMiddleware';
 import { roles } from '../utils/roles';
@@ -19,6 +19,9 @@ router.get('/users/:id', getUser);
 
 // router.get('/users',authMiddleware, listUsers);
 router.get('/users', listUsers);
+
+// Rota para obter o perfil do usuário logado
+router.get('/profile', authMiddleware, getProfile);
 
 export default router;
  

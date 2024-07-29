@@ -285,8 +285,6 @@ export const deleteCell = async (req: Request, res: Response) => {
 
   // Verificar se req.user está definido e possui um id
  
-
-
   if (isNaN(cellId)) {
     return res.status(400).json({ error: 'Invalid cellId' });
   }
@@ -300,5 +298,21 @@ export const deleteCell = async (req: Request, res: Response) => {
     } else {
       res.status(500).json({ error: 'An unexpected error occurred' });
     }
+  }
+};
+
+
+export const listRecentCellsByLeader = async (req: Request, res: Response) => {
+  const leaderId = parseInt(req.params.leaderId);
+
+  if (isNaN(leaderId)) {
+    return res.status(400).json({ error: 'Invalid leaderId' });
+  }
+
+  try {
+    const result = await networkService.listRecentCellsByLeader(leaderId);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve recent cells data' });
   }
 };

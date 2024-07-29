@@ -27,3 +27,5 @@ export const deleteUser = async (id: number): Promise<User | null> => {
 export const listUsers = async (): Promise<User[]> => {
   return prisma.user.findMany();
 };
+
+

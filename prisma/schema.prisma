@@ -65,17 +65,17 @@ model Cell {
   name                        String
   discipuladorId             Int
   leaderId                   Int
-  quantityMembers             Int
-  quantityAttendees           Int
+  quantityMembers            Int
+  quantityAttendees          Int
   date                        DateTime
-  address                     String
+  address                     String?  // Opcional
   obreiroId                  Int
   pastorId                   Int
-  quantityGuardAngels         Int
-  quantityNotConsolidated     Int
-  quantityMaturityCourse       Int
-  quantityCLTCourse           Int
-  quantityNotConsolidatedMeeting Int
+  quantityGuardAngels         Int?  // Opcional
+  quantityNotConsolidated     Int?  // Opcional
+  quantityMaturityCourse      Int?  // Opcional
+  quantityCLTCourse           Int?  // Opcional
+  quantityNotConsolidatedMeeting Int?  // Opcional
   cellPhase                   String
   multiplicationDate          DateTime
   discipulador                User     @relation("CellDiscipulador", fields: [discipuladorId], references: [id])

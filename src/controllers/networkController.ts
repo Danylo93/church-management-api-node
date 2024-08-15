@@ -84,30 +84,32 @@ export const createCell = async (req: Request, res: Response) => {
   } = req.body;
 
   try {
+    // Chame o serviço passando os parâmetros. Campos opcionais podem ser passados como undefined se não estiverem presentes
     const cell = await networkService.createCell(
       discipuladorId,
-      leaderId,
-      name,
+      leaderId,  // Use null se não houver valor
+      name || '',  // Use uma string vazia se não houver valor
       quantityMembers,
       quantityAttendees,
       date,
-      address,
+      address || '',  // Use uma string vazia se não houver valor
       obreiroId,
       pastorId,
-      quantityGuardAngels,
-      quantityNotConsolidated,
-      quantityMaturityCourse,
-      quantityCLTCourse,
-      quantityNotConsolidatedMeeting,
+      quantityGuardAngels || null,  // Use null se não houver valor
+      quantityNotConsolidated || null,  // Use null se não houver valor
+      quantityMaturityCourse || null,  // Use null se não houver valor
+      quantityCLTCourse || null,  // Use null se não houver valor
+      quantityNotConsolidatedMeeting || null,  // Use null se não houver valor
       cellPhase,
       multiplicationDate
     );
     res.status(201).json(cell);
   } catch (error) {
-    console.error(error)
+    console.error(error);
     res.status(500).json({ error: 'Failed to create cell' });
   }
 };
+
 
 export const updateCell = async (req: Request, res: Response) => {
   const cellId = parseInt(req.params.cellId);

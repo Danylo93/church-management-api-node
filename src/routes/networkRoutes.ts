@@ -2,14 +2,13 @@
 
 import { Router } from 'express';
 import * as networkController from '../controllers/networkController';
-import { createNetworkObreiro, createNetworkDiscipulador, createCell, deleteCell, listRecentCellsByLeader } from '../controllers/networkController';
-import { authMiddleware } from '../middleware/authMiddleware';
+import { createNetworkObreiro,sendReportToObreiro, createNetworkDiscipulador,listLeadersByDiscipulador, createReportLeader, deleteCell, listRecentCellsByLeader, listReportsByDiscipulador } from '../controllers/networkController';
 
 const router = Router();
 
 router.post('/networks/obreiro', createNetworkObreiro);
 router.post('/networks/discipulador', createNetworkDiscipulador);
-router.post('/cells', createCell);
+router.post('/cells', createReportLeader);
 router.put('/cells/:cellId', networkController.updateCell);
 
 
@@ -23,11 +22,12 @@ router.delete('/cells/:cellId', deleteCell);
 router.get('/recent-cells-by-leader/:leaderId', networkController.listRecentCellsByLeader);
 
 
+router.get('/discipuladores/:discipuladorId/leaders', listLeadersByDiscipulador)
+router.get('/obreiros/:obreiroId/discipuladores', networkController.listDiscipuladorByObreiro)
 
-router.get('/qtd/members/leader/:leaderId', networkController.sumByLeader);
-router.get('/qtd/members/discipulador/:discipuladorId', networkController.sumByDiscipulador);
-router.get('/qtd/members/obreiro/:obreiroId', networkController.sumByObreiro);
-router.get('/qtd/members/pastor/:pastorId', networkController.sumByPastor);
+// Chart Discipulador
+router.get('/average-members-attendees/:discipuladorId', networkController.getAverageMembersAndAttendees);
+
 
 // Rota para listar todos que são Obreiros
 router.get('/obreiros', networkController.listObreiros);
@@ -40,7 +40,9 @@ router.get('/lideres', networkController.listLideres);
 
 router.get('/pastores', networkController.listPastores);
 
-
+// envia relatório para Obreiro
+router.post('/send-report', sendReportToObreiro);
+router.get('/reports/discipulador/:discipuladorId', listReportsByDiscipulador);
 
 
 export default router;

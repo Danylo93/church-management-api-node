@@ -2,6 +2,60 @@ import { PrismaClient, NetworkObreiro, NetworkDiscipulador, Cell } from '@prisma
 
 const prisma = new PrismaClient();
 
+
+export const getLeadersByDiscipulador = async (discipuladorId: number) => {
+  const discipulador = await prisma.user.findUnique({
+    where: { id: discipuladorId },
+    include: {
+      cells: {
+        include: {
+          leader: true, // Inclui os líderes associados às células do discipulador
+        },
+      },
+    },
+  });
+
+  if (!discipulador) {
+    throw new Error('Discipulador not found');
+  }
+
+  // Extrai os nomes dos líderes das células associadas
+  const leaderNames = discipulador.cells
+    .map(cell => cell.leader?.name) // Extrai apenas o nome do líder
+    .filter(name => name); // Filtra valores falsy (por exemplo, null ou undefined)
+  
+  // Remove duplicatas usando um Set e retorna uma lista de nomes únicos
+  return [...new Set(leaderNames)];
+};
+
+export const getDiscipuladorByObreiro = async (obreiroId: number) => {
+  const obreiro = await prisma.user.findUnique({
+    where: { id: obreiroId },
+    include: {
+      cells: {
+        include: {
+          discipulador: true, // Inclui os discipuladores associados às células do obreiro
+        },
+      },
+    },
+  });
+
+  if (!obreiro) {
+    throw new Error('Obreiro not found');
+  }
+
+  // Extrai os discipuladores das células associadas
+  const discipuladorNames = obreiro.cells
+    .map(cell => cell.discipulador?.name) // Extrai apenas o nome do discipulador
+    .filter(name => name); // Filtra valores falsy (por exemplo, null ou undefined)
+  
+  // Remove duplicatas usando um Set e retorna uma lista de nomes únicos
+  return [...new Set(discipuladorNames)];
+};
+
+
+
+
 export const createNetworkObreiro = async (pastorId: number, obreiroId: number, name: string, quantityCells: number, quantityMembers: number, quantityAttendees: number): Promise<NetworkObreiro> => {
   return prisma.networkObreiro.create({
     data: {
@@ -27,7 +81,7 @@ export const createNetworkDiscipulador = async (obreiroId: number, discipuladorI
   });
 };
 
-export const createCell = async (
+export const createReportLeader = async (
   discipuladorId: number,
   leaderId: number,
   name: string,
@@ -65,6 +119,109 @@ export const createCell = async (
       multiplicationDate,
     },
   });
+};
+
+interface Report {
+  id: number;
+  cellId: number;
+  leaderId: number;
+  discipuladorId: number;
+  obreiroId: number;
+  pastorId: number;
+  date: Date;
+  location: string | null;
+  quantityMembers: number | null;
+  quantityAttendees: number | null;
+  quantityNotConsolidated: number | null;
+  quantityGuardAngels: number | null;
+  quantityCLTCourse: number | null;
+  quantityNotConsolidatedMeeting: number | null;
+}
+
+export const sendReportToObreiro = async (
+  discipuladorId: number,
+  obreiroId: number,
+  pastorId: number
+): Promise<Report[]> => {
+  try {
+    const cells = await prisma.cell.findMany({
+      where: { discipuladorId },
+    });
+
+    if (!cells.length) {
+      throw new Error('No cells found for the given discipulador');
+    }
+
+    const reports = await Promise.all(
+      cells.map(cell =>
+        prisma.report.create({
+          data: {
+            cellId: cell.id,
+            leaderId: cell.leaderId,
+            discipuladorId,
+            obreiroId,
+            pastorId,
+            date: new Date(),
+            location: cell.address || '',
+            quantityMembers: cell.quantityMembers,
+            quantityAttendees: cell.quantityAttendees,
+            quantityNotConsolidated: cell.quantityNotConsolidated || 0,
+            quantityGuardAngels: cell.quantityGuardAngels || 0,
+            quantityCLTCourse: cell.quantityCLTCourse || 0,
+            quantityNotConsolidatedMeeting: cell.quantityNotConsolidatedMeeting || 0,
+          },
+        })
+      )
+    );
+
+    return reports;
+  } catch (error) {
+    console.error('Error sending reports to Obreiro:', error);
+    throw new Error('Failed to send reports to Obreiro');
+  }
+};
+
+export const getReportsByDiscipulador = async (discipuladorId: number) => {
+  try {
+    const reports = await prisma.report.findMany({
+      where: { discipuladorId },
+      orderBy: { date: 'desc' }, // Ordenar por data, mais recente primeiro
+    });
+
+    return reports;
+  } catch (error) {
+    console.error('Error fetching reports:', error);
+    throw new Error('Failed to fetch reports');
+  }
+};
+
+export const getAverageMembersAndAttendeesByDiscipulador = async (discipuladorId: number) => {
+  try {
+    // Encontrar todos os relatórios associados ao discipulador
+    const reports = await prisma.report.findMany({
+      where: { discipuladorId },
+      select: {
+        quantityMembers: true,
+        quantityAttendees: true,
+      },
+    });
+
+    if (reports.length === 0) {
+      return { averageMembers: 0, averageAttendees: 0 };
+    }
+
+    // Calcular a média de membros e frequentadores
+    const totalMembers = reports.reduce((sum, report) => sum + (report.quantityMembers || 0), 0);
+    const totalAttendees = reports.reduce((sum, report) => sum + (report.quantityAttendees || 0), 0);
+
+    const averageMembers = totalMembers / reports.length;
+    const averageAttendees = totalAttendees / reports.length;
+
+    return { averageMembers, averageAttendees };
+  } catch (error) {
+    console.error('Error calculating averages:', error);
+    throw new Error('Failed to calculate averages');
+  }
 };
 
 export const updateCell = async (
@@ -137,7 +294,7 @@ export const getCellsByDiscipulador = async (discipuladorId: number) => {
   const cells = await prisma.cell.findMany({
     where: { discipuladorId },
     include: {
-      leader: true, // Inclui dados do líder, se necessário
+      leader: true,
     },
   });
   return cells;
@@ -205,53 +362,6 @@ export const listRecentCellsByLeader = async (leaderId: number) => {
 };
 
 
-// Soma de membros e frequentadores por Líder de Célula
-export const sumMembersAndAttendeesByLeader = async (leaderId: number) => {
-  const cells = await prisma.cell.findMany({
-    where: { leaderId },
-  });
-
-  const totalMembers = cells.reduce((sum, cell) => sum + cell.quantityMembers, 0);
-  const totalAttendees = cells.reduce((sum, cell) => sum + cell.quantityAttendees, 0);
-
-  return { totalMembers, totalAttendees };
-};
-
-// Soma de membros e frequentadores por Discipulador
-export const sumMembersAndAttendeesByDiscipulador = async (discipuladorId: number) => {
-  const cells = await prisma.cell.findMany({
-    where: { discipuladorId },
-  });
-
-  const totalMembers = cells.reduce((sum, cell) => sum + cell.quantityMembers, 0);
-  const totalAttendees = cells.reduce((sum, cell) => sum + cell.quantityAttendees, 0);
-
-  return { totalMembers, totalAttendees };
-};
-
-// Soma de membros e frequentadores por Obreiro
-export const sumMembersAndAttendeesByObreiro = async (obreiroId: number) => {
-  const cells = await prisma.cell.findMany({
-    where: { obreiroId },
-  });
-
-  const totalMembers = cells.reduce((sum, cell) => sum + cell.quantityMembers, 0);
-  const totalAttendees = cells.reduce((sum, cell) => sum + cell.quantityAttendees, 0);
-
-  return { totalMembers, totalAttendees };
-};
-
-// Soma de membros e frequentadores por Pastor
-export const sumMembersAndAttendeesByPastor = async (pastorId: number) => {
-  const cells = await prisma.cell.findMany({
-    where: { pastorId },
-  });
-
-  const totalMembers = cells.reduce((sum, cell) => sum + cell.quantityMembers, 0);
-  const totalAttendees = cells.reduce((sum, cell) => sum + cell.quantityAttendees, 0);
-
-  return { totalMembers, totalAttendees };
-};
 
 export const deleteCell = async (cellId: number) => {
   const cell = await prisma.cell.findUnique({

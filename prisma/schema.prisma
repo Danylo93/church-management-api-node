@@ -24,12 +24,10 @@ model User {
   obreiroNetworks      NetworkObreiro[]     @relation("ObreiroNetworks")
   discipuladorNetworks NetworkDiscipulador[] @relation("DiscipuladorNetworks")
   cells                Cell[]                @relation("CellDiscipulador")
-  reports              Report[]              @relation("ReportDiscipulador")
 
   // Relações adicionais
   obreiroCells         Cell[]                @relation("CellLeader")
-  reportsByObreiro     Report[]              @relation("ReportObreiro")
-  reportsByPastor      Report[]              @relation("ReportPastor")
+
   
   // Adicionando relação para NetworkDiscipulador
   discipuladorNetworksFromObreiro NetworkDiscipulador[] @relation("ObreiroNetworks")
@@ -80,26 +78,22 @@ model Cell {
   multiplicationDate          DateTime
   discipulador                User     @relation("CellDiscipulador", fields: [discipuladorId], references: [id])
   leader                      User     @relation("CellLeader", fields: [leaderId], references: [id])
-  reports                     Report[]
 }
 
 
 model Report {
-  id                   Int      @id @default(autoincrement())
-  cellId               Int
-  date                 DateTime
-  location             String
-  quantityMembers       Int
-  quantityAttendees    Int
-  quantityNotConsolidated Int
-  quantityGuardAngels   Int
-  discipuladorId       Int
-  obreiroId            Int
-  pastorId             Int
-  leaderId             Int
-
-  cell                 Cell     @relation(fields: [cellId], references: [id])
-  discipulador         User     @relation("ReportDiscipulador", fields: [discipuladorId], references: [id])
-  obreiro              User     @relation("ReportObreiro", fields: [obreiroId], references: [id])
-  pastor               User     @relation("ReportPastor", fields: [pastorId], references: [id])
+  id                          Int      @id @default(autoincrement())
+  cellId                      Int
+  leaderId                    Int
+  discipuladorId              Int
+  obreiroId                   Int
+  pastorId                    Int
+  date                        DateTime
+  location                    String?
+  quantityMembers             Int?
+  quantityAttendees           Int?
+  quantityNotConsolidated     Int?
+  quantityGuardAngels         Int?
+  quantityCLTCourse           Int?
+  quantityNotConsolidatedMeeting Int?
 }

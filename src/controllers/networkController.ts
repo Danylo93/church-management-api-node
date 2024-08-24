@@ -1,5 +1,56 @@
 import { Request, Response } from 'express';
 import * as networkService from '../services/networkService';
+import { getAverageMembersAndAttendeesByDiscipulador, getReportsByDiscipulador, sendReportToObreiro as sendReportToObreiroService } from '../services/networkService';
+
+
+export const listLeadersByDiscipulador = async (req: Request, res: Response) => {
+  const discipuladorId = parseInt(req.params.discipuladorId);
+  
+  if (isNaN(discipuladorId)) {
+    return res.status(400).json({ error: 'Invalid discipuladorId' });
+  }
+
+  try {
+    const leaderNames = await networkService.getLeadersByDiscipulador(discipuladorId);
+    res.status(200).json(leaderNames); // Retorna apenas os nomes dos líderes
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve leaders' });
+  }
+};
+
+export const listDiscipuladorByObreiro = async (req: Request, res: Response) => {
+  const obreiroId = parseInt(req.params.obreiroId, 10);
+  
+  if (isNaN(obreiroId)) {
+    return res.status(400).json({ error: 'Invalid obreiroId' });
+  }
+
+  try {
+    const discipuladorNames = await networkService.getDiscipuladorByObreiro(obreiroId);
+    res.status(200).json(discipuladorNames); // Retorna apenas os nomes dos discipuladores
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve discipuladores' });
+  }
+};
+
+export const getAverageMembersAndAttendees = async (req: Request, res: Response) => {
+  const discipuladorId = parseInt(req.params.discipuladorId, 10);
+
+  if (isNaN(discipuladorId)) {
+    return res.status(400).json({ error: 'Invalid discipuladorId' });
+  }
+
+  try {
+    const averages = await getAverageMembersAndAttendeesByDiscipulador(discipuladorId);
+    res.status(200).json(averages);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to calculate averages' });
+  }
+};
+
+
+
+
 
 // Rota para listar todos que são Obreiros
 export const listObreiros = async (req: Request, res: Response) => {
@@ -63,7 +114,7 @@ export const createNetworkDiscipulador = async (req: Request, res: Response) => 
   }
 };
 
-export const createCell = async (req: Request, res: Response) => {
+export const createReportLeader = async (req: Request, res: Response) => {
   const {
     discipuladorId,
     leaderId,
@@ -85,7 +136,7 @@ export const createCell = async (req: Request, res: Response) => {
 
   try {
     // Chame o serviço passando os parâmetros. Campos opcionais podem ser passados como undefined se não estiverem presentes
-    const cell = await networkService.createCell(
+    const cell = await networkService.createReportLeader(
       discipuladorId,
       leaderId,  // Use null se não houver valor
       name || '',  // Use uma string vazia se não houver valor
@@ -107,6 +158,22 @@ export const createCell = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create cell' });
+  }
+};
+
+export const sendReportToObreiro = async (req: Request, res: Response): Promise<void> => {
+  const { discipuladorId, obreiroId, pastorId } = req.body;
+
+  try {
+    const reports = await sendReportToObreiroService(
+      discipuladorId,
+      obreiroId,
+      pastorId
+    );
+    res.status(201).json(reports);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to send reports to Obreiro' });
   }
 };
 
@@ -160,6 +227,22 @@ export const updateCell = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to update cell' });
+  }
+};
+
+export const listReportsByDiscipulador = async (req: Request, res: Response) => {
+  const { discipuladorId } = req.params;
+
+  if (!discipuladorId) {
+    return res.status(400).json({ error: 'Discipulador ID is required' });
+  }
+
+  try {
+    const reports = await getReportsByDiscipulador(Number(discipuladorId));
+    res.status(200).json(reports);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch reports' });
   }
 };
 
@@ -220,65 +303,6 @@ export const listCellsByLeader = async (req: Request, res: Response) => {
     res.status(200).json(cells);
   } catch (error) {
     res.status(500).json({ error: 'Failed to retrieve cells' });
-  }
-};
-// Soma de membros e frequentadores por Líder de Célula
-export const sumByLeader = async (req: Request, res: Response) => {
-  const leaderId = parseInt(req.params.leaderId);
-  if (isNaN(leaderId)) {
-    return res.status(400).json({ error: 'Invalid leaderId' });
-  }
-
-  try {
-    const result = await networkService.sumMembersAndAttendeesByLeader(leaderId);
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve sums' });
-  }
-};
-
-// Soma de membros e frequentadores por Discipulador
-export const sumByDiscipulador = async (req: Request, res: Response) => {
-  const discipuladorId = parseInt(req.params.discipuladorId);
-  if (isNaN(discipuladorId)) {
-    return res.status(400).json({ error: 'Invalid discipuladorId' });
-  }
-
-  try {
-    const result = await networkService.sumMembersAndAttendeesByDiscipulador(discipuladorId);
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve sums' });
-  }
-};
-
-// Soma de membros e frequentadores por Obreiro
-export const sumByObreiro = async (req: Request, res: Response) => {
-  const obreiroId = parseInt(req.params.obreiroId);
-  if (isNaN(obreiroId)) {
-    return res.status(400).json({ error: 'Invalid obreiroId' });
-  }
-
-  try {
-    const result = await networkService.sumMembersAndAttendeesByObreiro(obreiroId);
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve sums' });
-  }
-};
-
-// Soma de membros e frequentadores por Pastor
-export const sumByPastor = async (req: Request, res: Response) => {
-  const pastorId = parseInt(req.params.pastorId);
-  if (isNaN(pastorId)) {
-    return res.status(400).json({ error: 'Invalid pastorId' });
-  }
-
-  try {
-    const result = await networkService.sumMembersAndAttendeesByPastor(pastorId);
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve sums' });
   }
 };
 

@@ -137,13 +137,33 @@ interface Report {
   quantityCLTCourse: number | null;
   quantityNotConsolidatedMeeting: number | null;
 }
+// reportService.ts
 
 export const sendReportToObreiro = async (
   discipuladorId: number,
   obreiroId: number,
   pastorId: number
-): Promise<Report[]> => {
+): Promise<{ success: boolean; message: string }> => {
   try {
+    const recentReport = await prisma.report.findFirst({
+      where: {
+        AND: [
+          { discipuladorId },
+          { obreiroId },
+          { pastorId },
+          {
+            date: {
+              gte: new Date(new Date().setDate(new Date().getDate() - 7)), // Data dos últimos 7 dias
+            },
+          },
+        ],
+      },
+    });
+
+    if (recentReport) {
+      return { success: false, message: 'Já foi enviado um relatório para este obreiro e pastor nos últimos 7 dias.' };
+    }
+
     const cells = await prisma.cell.findMany({
       where: { discipuladorId },
     });
@@ -152,7 +172,7 @@ export const sendReportToObreiro = async (
       throw new Error('No cells found for the given discipulador');
     }
 
-    const reports = await Promise.all(
+    await Promise.all(
       cells.map(cell =>
         prisma.report.create({
           data: {
@@ -174,26 +194,62 @@ export const sendReportToObreiro = async (
       )
     );
 
-    return reports;
+    return { success: true, message: 'Relatório enviado com sucesso' };
   } catch (error) {
     console.error('Error sending reports to Obreiro:', error);
     throw new Error('Failed to send reports to Obreiro');
   }
 };
 
+// reportService.ts
+
 export const getReportsByDiscipulador = async (discipuladorId: number) => {
   try {
-    const reports = await prisma.report.findMany({
+    const cells = await prisma.cell.findMany({
       where: { discipuladorId },
-      orderBy: { date: 'desc' }, // Ordenar por data, mais recente primeiro
     });
 
-    return reports;
+    if (!cells.length) {
+      throw new Error('No cells found for the given discipulador');
+    }
+
+    const reports = await Promise.all(
+      cells.map(async (cell) => {
+        const reportsForCell = await prisma.report.findMany({
+          where: { cellId: cell.id },
+        });
+
+        return {
+          cell: {
+            id: cell.id,
+            name: cell.name || 'Unknown Cell',
+            address: cell.address || 'Unknown Address',
+          },
+          reports: reportsForCell.map((report) => ({
+            id: report.id,
+            date: report.date,
+            location: report.location,
+            quantityMembers: report.quantityMembers,
+            quantityAttendees: report.quantityAttendees,
+            quantityNotConsolidated: report.quantityNotConsolidated,
+            quantityGuardAngels: report.quantityGuardAngels,
+            quantityCLTCourse: report.quantityCLTCourse,
+            quantityNotConsolidatedMeeting: report.quantityNotConsolidatedMeeting,
+          })),
+        };
+      })
+    );
+
+    return {
+      discipulador: `Discipulador ${discipuladorId}`, // Or fetch discipulador details if needed
+      reports,
+    };
   } catch (error) {
-    console.error('Error fetching reports:', error);
-    throw new Error('Failed to fetch reports');
+    console.error('Error getting reports by discipulador:', error);
+    throw new Error('Failed to get reports by discipulador');
   }
 };
+
 
 export const getAverageMembersAndAttendeesByDiscipulador = async (discipuladorId: number) => {
   try {

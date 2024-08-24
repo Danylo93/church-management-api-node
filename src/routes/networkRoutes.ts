@@ -2,14 +2,14 @@
 
 import { Router } from 'express';
 import * as networkController from '../controllers/networkController';
-import { createNetworkObreiro,sendReportToObreiro, createNetworkDiscipulador,listLeadersByDiscipulador, createReportLeader, deleteCell, listRecentCellsByLeader, listReportsByDiscipulador } from '../controllers/networkController';
+import { createNetworkObreiro,sendReportToObreiro, createNetworkDiscipulador,listLeadersByDiscipulador, createReportLeader, deleteCell, listRecentCellsByLeader, fetchReportsByDiscipulador } from '../controllers/networkController';
 
 const router = Router();
 
 router.post('/networks/obreiro', createNetworkObreiro);
 router.post('/networks/discipulador', createNetworkDiscipulador);
 router.post('/cells', createReportLeader);
-router.put('/cells/:cellId', networkController.updateCell);
+router.put('/cells/:cellId', networkController.updateReportCellOfLeader);
 
 
 router.get('/cells/discipulador/:discipuladorId', networkController.listCellsByDiscipulador);
@@ -42,7 +42,7 @@ router.get('/pastores', networkController.listPastores);
 
 // envia relatório para Obreiro
 router.post('/send-report', sendReportToObreiro);
-router.get('/reports/discipulador/:discipuladorId', listReportsByDiscipulador);
+router.get('/reports/discipulador/:discipuladorId', fetchReportsByDiscipulador);
 
 
 export default router;

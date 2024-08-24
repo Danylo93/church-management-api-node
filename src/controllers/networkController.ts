@@ -165,12 +165,18 @@ export const sendReportToObreiro = async (req: Request, res: Response): Promise<
   const { discipuladorId, obreiroId, pastorId } = req.body;
 
   try {
-    const reports = await sendReportToObreiroService(
+    const { success, message } = await sendReportToObreiroService(
       discipuladorId,
       obreiroId,
       pastorId
     );
-    res.status(201).json(reports);
+
+    if (!success) {
+      res.status(400).json({ message }); // Retorna uma mensagem se o relatório não puder ser enviado
+      return;
+    }
+
+    res.status(201).json({ message: 'Relatório enviado com sucesso' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to send reports to Obreiro' });
@@ -178,7 +184,7 @@ export const sendReportToObreiro = async (req: Request, res: Response): Promise<
 };
 
 
-export const updateCell = async (req: Request, res: Response) => {
+export const updateReportCellOfLeader = async (req: Request, res: Response) => {
   const cellId = parseInt(req.params.cellId);
   const {
     discipuladorId,
@@ -230,19 +236,15 @@ export const updateCell = async (req: Request, res: Response) => {
   }
 };
 
-export const listReportsByDiscipulador = async (req: Request, res: Response) => {
+export const fetchReportsByDiscipulador = async (req: Request, res: Response): Promise<void> => {
   const { discipuladorId } = req.params;
-
-  if (!discipuladorId) {
-    return res.status(400).json({ error: 'Discipulador ID is required' });
-  }
 
   try {
     const reports = await getReportsByDiscipulador(Number(discipuladorId));
     res.status(200).json(reports);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch reports' });
+    res.status(500).json({ error: 'Failed to fetch reports by discipulador' });
   }
 };
 

@@ -47,7 +47,7 @@ jobs:
     - name: Deploy to EC2
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@ec2-3-92-205-240.compute-1.amazonaws.com << 'EOF'
-          cd /church-management-api-node
+          cd church-management-api-node
           git pull origin master
           npm install
           npm run build

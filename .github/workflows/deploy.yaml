@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - develop  # Roda nas mudanças na branch 'develop'
+      - master  # Roda nas mudanças na branch 'master'
   pull_request:
     branches:
       - master  # Roda para Pull Requests na branch 'master'
@@ -33,7 +33,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/master'
 
     steps:
     - name: Checkout code

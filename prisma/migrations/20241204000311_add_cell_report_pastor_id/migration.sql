@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "CellReport" ALTER COLUMN "pastorId" DROP NOT NULL,
+ALTER COLUMN "workerId" DROP NOT NULL;

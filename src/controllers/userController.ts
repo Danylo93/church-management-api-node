@@ -1,72 +1,101 @@
-// src/controllers/userController.ts
-import { Request, Response } from 'express';
-import * as userService from '../services/userService';
+import { Request, Response } from "express";
+import {
+  createUser,
+  updateUser,
+  deleteUser,
+  getUsers,
+  getLeadersByDiscipler,
+  getLeadersByWorker,
+  getDisciplersByWorker,
+} from "../services/userService";
 
+// Função auxiliar para formatar erros
+const handleError = (res: Response, error: any, customMessage: string) => {
+  // Log do erro no servidor para debugging
+  console.error(error);
 
-
-// Método para obter um usuário por ID
-export const getUser = async (req: Request, res: Response) => {
-  try {
-    const user = await userService.getUserById(Number(req.params.id));
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch user' });
+  // Retornar um erro mais informativo
+  if (error instanceof Error) {
+    return res.status(400).json({ error: customMessage, details: error.message });
+  } else {
+    return res.status(500).json({ error: "Erro interno do servidor", details: error });
   }
 };
 
-export const updateUser = async (req: Request, res: Response) => {
+export const registerUser = async (req: Request, res: Response) => {
   try {
-    const user = await userService.updateUser(Number(req.params.id), req.body);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    res.json(user);
+    const user = await createUser(req.body);
+    res.status(201).json(user);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update user' });
+    handleError(res, error, "Erro ao registrar o usuário.");
   }
 };
 
-export const deleteUser = async (req: Request, res: Response) => {
+export const editUser = async (req: Request, res: Response) => {
   try {
-    const user = await userService.deleteUser(Number(req.params.id));
+    const { id } = req.params;
+    const user = await updateUser(Number(id), req.body);
+
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ message: "Usuário não encontrado." });
     }
+
     res.json(user);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete user' });
+    handleError(res, error, "Erro ao editar o usuário.");
   }
 };
 
-export const listUsers = async (req: Request, res: Response) => {
+export const listUsers = async (_req: Request, res: Response) => {
   try {
-    const users = await userService.listUsers();
+    const users = await getUsers();
     res.json(users);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch users' });
+    handleError(res, error, "Erro ao listar usuários.");
   }
 };
 
-// Método para obter as informações do perfil do usuário logado
-export const getProfile = async (req: Request, res: Response) => {
+export const listLeadersByDiscipler = async (req: Request, res: Response) => {
   try {
-    // O ID do usuário deve ser extraído do token ou da sessão
-    const userId = req.user?.id; // Supondo que o ID do usuário esteja em req.user.id
+    const { disciplerId } = req.params;
+    const leaders = await getLeadersByDiscipler(Number(disciplerId));
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    if (!leaders || leaders.length === 0) {
+      return res.status(404).json({ message: "Nenhum líder encontrado para esse discipulador." });
     }
 
-    const user = await userService.getUserById(userId);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json(user);
+    res.json(leaders);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch profile' });
+    handleError(res, error, "Erro ao listar líderes por discipulador.");
+  }
+};
+
+export const listLeadersByWorker = async (req: Request, res: Response) => {
+  try {
+    const { workerId } = req.params;
+    const leaders = await getLeadersByWorker(Number(workerId));
+
+    if (!leaders || leaders.length === 0) {
+      return res.status(404).json({ message: "Nenhum líder encontrado para esse obreiro." });
+    }
+
+    res.json(leaders);
+  } catch (error) {
+    handleError(res, error, "Erro ao listar líderes por obreiro.");
+  }
+};
+
+export const listDisciplersByWorker = async (req: Request, res: Response) => {
+  try {
+    const { workerId } = req.params;
+    const disciplers = await getDisciplersByWorker(Number(workerId));
+
+    if (!disciplers || disciplers.length === 0) {
+      return res.status(404).json({ message: "Nenhum discipulador encontrado para esse obreiro." });
+    }
+
+    res.json(disciplers);
+  } catch (error) {
+    handleError(res, error, "Erro ao listar discipuladores por obreiro.");
   }
 };

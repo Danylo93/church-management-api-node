@@ -4,9 +4,15 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+export const getUserByEmail = async (email: string) => {
+  return prisma.user.findUnique({
+    where: { email },
+  });
+};
+
 
 export const createUser = async (data: any) => {
-  const { role, discipuladorId, obreiroId, pastorId } = data;
+  const { password, role, discipuladorId, obreiroId, pastorId } = data;
 
   // Validações de relacionamento
   if (role === "Líder" && (!discipuladorId || !obreiroId || !pastorId)) {
@@ -21,7 +27,16 @@ export const createUser = async (data: any) => {
     throw new Error("Obreiro precisa de pastor.");
   }
 
-  return prisma.user.create({ data });
+  // Hasheando a senha com bcrypt
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Criação do usuário com a senha hasheada
+  return prisma.user.create({
+    data: {
+      ...data, // Mantém os outros campos
+      password: hashedPassword, // Armazena a senha hasheada
+    },
+  });
 };
 
 export const updateUser = async (id: number, data: any) => {

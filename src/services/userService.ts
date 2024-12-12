@@ -56,6 +56,7 @@ export const getUsers = async () => {
   return prisma.user.findMany();
 };
 
+//Listar Lideres por Discipulador
 export const getLeadersByDiscipler = async (disciplerId: number) => {
   const leaders = await prisma.user.findMany({
     where: { discipuladorId: disciplerId, role: "Líder" },
@@ -71,11 +72,11 @@ export const getLeadersByDiscipler = async (disciplerId: number) => {
 
   // Formata a resposta conforme o solicitado
   return leaders.map((leader) => {
-    return `${leader.name} pertence à Rede do Discipulador ${leader.discipulador?.name}`;
+    return `${leader.name}`;
   });
 };
 
-
+// Listar Líderes por Obreiro
 export const getLeadersByWorker = async (workerId: number) => {
   const leaders = await prisma.user.findMany({
     where: { obreiroId: workerId, role: "Líder" },
@@ -96,11 +97,11 @@ export const getLeadersByWorker = async (workerId: number) => {
 
   // Formata a resposta conforme o solicitado
   return leaders.map((leader) => {
-    return `${leader.name} pertence à Rede do Discipulador ${leader.discipulador?.name} que é da rede do Obreiro ${leader.obreiro?.name}`;
+    return `${leader.name}`;
   });
 };
 
-
+// Listar Discipuladores por Obreiro
 
 export const getDisciplersByWorker = async (workerId: number) => {
   const disciplers = await prisma.user.findMany({
@@ -117,7 +118,51 @@ export const getDisciplersByWorker = async (workerId: number) => {
 
   // Formata a resposta conforme o solicitado
   return disciplers.map((discipler) => {
-    return `${discipler.name} pertence a Rede do Obreiro ${discipler.obreiro?.name}`;
+    return `${discipler.name}`;
   });
 };
 
+export const getUserDetails = async (userId: number) => {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      name: true,
+      phone: true,
+      address: true,
+      role: true,
+      email: true,
+      photo: true,
+
+      discipulador: {
+        select: {
+          name: true,
+        },
+      },
+      obreiro: {
+        select: {
+          name: true,
+        },
+      },
+      pastor: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+};
+
+export const getUsersByRole = async (role: string) => {
+  if (!role) {
+    throw new Error('O parâmetro "role" é obrigatório.');
+  }
+
+  // Busca no banco de dados usando Prisma
+  const users = await prisma.user.findMany({
+    where: {
+      role, // Filtra pelo cargo fornecido
+    },
+  });
+
+  return users;
+};

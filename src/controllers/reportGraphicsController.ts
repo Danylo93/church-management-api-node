@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getMonthlyReport } from "../services/reportGraphics";
+import { getMonthlyReport, getMonthlyReportByDiscipulador, getMonthlyWorkerReport } from "../services/reportGraphics";
 
 // Função auxiliar para formatar erros
 const handleError = (res: Response, error: any, customMessage: string) => {
@@ -47,3 +47,75 @@ export const getMonthlyReportHandler = async (req: Request, res: Response) => {
     handleError(res, error, "Erro ao obter o relatório mensal.");
   }
 };
+
+export const getMonthlyReportByDiscipuladorHandler = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { discipuladorId, month, year } = req.query;
+
+    // Validação dos parâmetros
+    if (!discipuladorId || !month || !year) {
+      return res
+        .status(400)
+        .json({ message: "Discipulador ID, mês e ano são obrigatórios." });
+    }
+
+    const monthNumber = parseInt(month as string, 10);
+    const yearNumber = parseInt(year as string, 10);
+
+    if (isNaN(monthNumber) || isNaN(yearNumber)) {
+      return res
+        .status(400)
+        .json({ message: "Mês e ano devem ser números válidos." });
+    }
+
+    // Chama o serviço para obter o relatório
+    const report = await getMonthlyReportByDiscipulador(
+      discipuladorId as string,
+      monthNumber,
+      yearNumber
+    );
+
+    if (!report) {
+      return res
+        .status(404)
+        .json({ message: "Nenhum relatório encontrado para o discipulador." });
+    }
+
+    // Retorna o relatório em formato JSON
+    res.status(200).json(report);
+  } catch (error) {
+    console.error("Erro ao buscar relatório mensal por discipulador:", error);
+    res.status(500).json({ message: "Erro interno no servidor." });
+  }
+};
+
+
+export const getWorkerReportHandler = async (req: Request, res: Response) => {
+  try {
+    const { workerId, month, year } = req.body;
+
+    // Verifica se os parâmetros obrigatórios foram fornecidos
+    if (!workerId || !month || !year) {
+      return res.status(400).json({
+        message: "Parâmetros obrigatórios: workerId, month e year.",
+      });
+    }
+
+    // Chama o serviço para buscar o relatório
+    const report = await getMonthlyWorkerReport(workerId, month, year);
+
+    // Retorna o relatório como resposta
+    return res.status(200).json(report);
+  } catch (error) {
+    console.error("Erro ao obter relatório de obreiro:", error);
+    return res.status(500).json({
+      message: "Erro interno do servidor.",
+      error: error,
+    });
+  }
+};
+
+

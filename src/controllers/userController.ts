@@ -7,7 +7,10 @@ import {
   getLeadersByDiscipler,
   getLeadersByWorker,
   getDisciplersByWorker,
+  getUserDetails,
+  getUsersByRole,
 } from "../services/userService";
+
 
 // Função auxiliar para formatar erros
 const handleError = (res: Response, error: any, customMessage: string) => {
@@ -99,3 +102,40 @@ export const listDisciplersByWorker = async (req: Request, res: Response) => {
     handleError(res, error, "Erro ao listar discipuladores por obreiro.");
   }
 };
+
+export const getUserDetailsController = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    const userDetails = await getUserDetails(Number(userId));
+
+    if (!userDetails) {
+      return res.status(404).json({ message: "Usuário não encontrado." });
+    }
+
+    res.json(userDetails);
+  } catch (error) {
+    handleError(res, error, "Erro ao obter os detalhes do usuário.");
+  }
+};
+
+
+export const fetchUsersByRole = async (req: Request, res: Response) => {
+  try {
+    const { role } = req.query;
+
+    if (!role || typeof role !== 'string') {
+      return res.status(400).json({ error: 'O parâmetro "role" é obrigatório e deve ser uma string.' });
+    }
+
+    // Chama o Service para buscar os usuários
+    const users = await getUsersByRole(role);
+
+    return res.status(200).json(users);
+  } catch (error: any) {
+    console.error(error.message);
+    return res.status(500).json({ error: error.message || 'Erro ao buscar usuários.' });
+  }
+};
+
+

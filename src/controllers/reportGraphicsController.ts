@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getMonthlyReport, getMonthlyReportByDiscipulador, getMonthlyWorkerReport } from "../services/reportGraphics";
+import { getMonthlyReport, getMonthlyReportByDiscipulador, getMonthlyReportByPastor, getMonthlyWorkerReport } from "../services/reportGraphics";
 
 // Função auxiliar para formatar erros
 const handleError = (res: Response, error: any, customMessage: string) => {
@@ -117,5 +117,24 @@ export const getWorkerReportHandler = async (req: Request, res: Response) => {
     });
   }
 };
+
+
+export const getPastorMonthlyReport = async (req: Request, res: Response) => {
+  try {
+    const { pastorId, month, year } = req.body;
+
+    if (!pastorId || !month || !year) {
+      return res.status(400).json({ error: "Os parâmetros pastorId, month e year são obrigatórios" });
+    }
+
+    const report = await getMonthlyReportByPastor(pastorId, Number(month), Number(year));
+
+    return res.status(200).json(report);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Erro ao buscar relatório mensal do pastor" });
+  }
+};
+
 
 

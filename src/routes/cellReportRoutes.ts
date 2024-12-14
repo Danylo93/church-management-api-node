@@ -8,8 +8,10 @@ import {
   listReportsByWorker,
   listReportsByPastor,
 } from "../controllers/cellReportController";
-import { getMonthlyReportByDiscipuladorHandler, getMonthlyReportHandler, getWorkerReportHandler } from "../controllers/reportGraphicsController";
+import { getMonthlyReportByDiscipuladorHandler, getMonthlyReportHandler, getPastorMonthlyReport, getWorkerReportHandler } from "../controllers/reportGraphicsController";
 import { getMonthlyReportByDiscipulador } from "../services/reportGraphics";
+import { get } from "http";
+import { getPackedSettings } from "http2";
 
 const router = Router();
 
@@ -25,6 +27,7 @@ router.get("/reports/pastor/:pastorId", listReportsByPastor);
 router.get("/reports/leaders/monthly", getMonthlyReportHandler);
 router.get("/reports/disciplers/monthly", getMonthlyReportByDiscipuladorHandler);
 router.post("/reports/workers/monthly", getWorkerReportHandler);
+router.post("/reports/pastor/monthly", getPastorMonthlyReport);
 
 
 export default router;

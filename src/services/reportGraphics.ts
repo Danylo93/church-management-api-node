@@ -265,3 +265,89 @@ export const getMonthlyWorkerReport = async (
     disciplers: disciplerNames.map((discipler) => discipler.name),
   };
 };
+
+export const getMonthlyReportByPastor = async (
+  pastorId: string,
+  month: number,
+  year: number
+) => {
+  // Define o intervalo do mês
+  const startOfMonthDate = new Date(year, month - 1, 1);
+  const endOfMonthDate = new Date(year, month, 0);
+
+  // Busca os discipuladores associados ao pastor
+  const disciplers = await prisma.user.findMany({
+    where: { pastorId: Number(pastorId), role: "Discipulador" },
+    select: { id: true, name: true },
+  });
+
+  // Busca os obreiros associados ao pastor
+  const obreiros = await prisma.user.findMany({
+    where: { pastorId: Number(pastorId), role: "Obreiro" },
+    select: { id: true, name: true },
+  });
+
+  // Busca os líderes associados aos discipuladores
+  const leaders = await prisma.user.findMany({
+    where: { discipuladorId: { in: disciplers.map((d) => d.id) }, role: "Líder" },
+    select: { id: true, name: true },
+  });
+
+  // Busca os relatórios de células no intervalo do mês
+  const reports = await prisma.cellReport.findMany({
+    where: {
+      meetingDate: {
+        gte: startOfMonthDate,
+        lte: endOfMonthDate,
+      },
+      pastorId: Number(pastorId), // Garante que o relatório seja do pastor atual
+    },
+    select: {
+      membersPresent: true,
+      attendees: true,
+      visitors: true,
+    },
+  });
+
+  // Verifica se há relatórios
+  if (reports.length === 0) {
+    return {
+      month: `${year}-${String(month).padStart(2, "0")}`,
+      pastorId,
+      pastorName: (await prisma.user.findUnique({
+        where: { id: Number(pastorId) },
+        select: { name: true },
+      }))?.name || "Desconhecido",
+      averageMembers: 0,
+      averageAttendees: 0,
+      averageVisitors: 0,
+      leaders: leaders.map((leader) => leader.name),
+      disciplers: disciplers.map((discipler) => discipler.name),
+      obreiros: obreiros.map((obreiro) => obreiro.name),
+    };
+  }
+
+  // Calcula os totais para médias
+  const totalMembers = reports.reduce((sum, report) => sum + report.membersPresent, 0);
+  const totalAttendees = reports.reduce((sum, report) => sum + report.attendees, 0);
+  const totalVisitors = reports.reduce((sum, report) => sum + report.visitors, 0);
+  const reportCount = reports.length;
+
+  return {
+    month: `${year}-${String(month).padStart(2, "0")}`,
+    pastorId,
+    pastorName: (await prisma.user.findUnique({
+      where: { id: Number(pastorId) },
+      select: { name: true },
+    }))?.name || "Desconhecido",
+    averageMembers: Math.round(totalMembers / reportCount),
+    averageAttendees: Math.round(totalAttendees / reportCount),
+    averageVisitors: Math.round(totalVisitors / reportCount),
+    leaders: leaders.map((leader) => leader.name),
+    disciplers: disciplers.map((discipler) => discipler.name),
+    obreiros: obreiros.map((obreiro) => obreiro.name),
+  };
+};
+
+
+

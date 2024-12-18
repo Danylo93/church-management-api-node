@@ -3,8 +3,9 @@
 import { PrismaClient } from '@prisma/client';
 import express from 'express';
 import userRoutes from './routes/userRoutes';
+import cellReportRoutes from './routes/cellReportRoutes';
 import authRoutes from './routes/authRoutes';
-import networkRoutes from './routes/networkRoutes';
+// import networkRoutes from './routes/networkRoutes';
 
 
 const prisma = new PrismaClient();
@@ -14,11 +15,13 @@ app.use(express.json());
 
 
 app.use('/api/auth', authRoutes);
+
 // Rotas de usuário
 app.use('/api', userRoutes);
 
+
 // Rotas de redes e células
-app.use('/api', networkRoutes);
+app.use('/api', cellReportRoutes);
 
 
 const PORT = process.env.PORT || 3000;

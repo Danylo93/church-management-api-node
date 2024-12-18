@@ -1,27 +1,28 @@
-import { Router } from 'express';
-import { updateUser, deleteUser, getUser, listUsers, getProfile } from '../controllers/userController';
-import { authMiddleware } from '../middleware/authMiddleware';
-import { roleMiddleware } from '../middleware/roleMiddleware';
-import { roles } from '../utils/roles';
+import { Router } from "express";
+import {
+  registerUser,
+  editUser,
+  listUsers,
+  listLeadersByDiscipler,
+  listLeadersByWorker,
+  listDisciplersByWorker,
+  getUserDetailsController,
+  fetchUsersByRole,
+} from "../controllers/userController";
 
 const router = Router();
 
-// router.post('/users', authMiddleware, roleMiddleware([...roles.GENERAL_ADMIN]), createUser);
+router.post("/register", registerUser); // Cadastrar Usuário
+router.put("/edit/:id", editUser); // Editar Usuario
+//router.delete("/delete/:id", deleteUser);
+router.get("/users", listUsers); // Listar todos os Usuarios
+router.get("/leaders-by-discipler/:disciplerId", listLeadersByDiscipler); // Listar Líderes por Discipulador
+router.get("/leaders-by-worker/:workerId", listLeadersByWorker); // Listar Líderes por Obreiro com os Discipuladores
+router.get("/disciplers-by-worker/:workerId", listDisciplersByWorker); // Listar Discipuladores por Obreiro
+router.get("/users/:userId/details", getUserDetailsController);
 
-// router.put('/users/:id', authMiddleware, roleMiddleware([...roles.GENERAL_ADMIN, ...roles.NON_GENERAL_ADMIN]), updateUser);
-router.put('/users/:id', updateUser);
+router.get("/find/users-role", fetchUsersByRole)
 
-// router.delete('/users/:id', authMiddleware, roleMiddleware([...roles.GENERAL_ADMIN]), deleteUser);
-router.delete('/users/:id', deleteUser);
 
-// router.get('/users/:id', authMiddleware, getUser);
-router.get('/users/:id', getUser);
-
-// router.get('/users',authMiddleware, listUsers);
-router.get('/users', listUsers);
-
-// Rota para obter o perfil do usuário logado
-router.get('/profile', authMiddleware, getProfile);
 
 export default router;
- 

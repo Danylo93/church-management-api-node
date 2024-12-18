@@ -1,23 +1,25 @@
-import { Request, Response } from 'express';
-import { register as registerService, login as loginService } from '../services/authService';
+import { Request, Response } from "express";
+import { loginUserService } from "../services/authService"; // Importa o serviço de login
 
-export const register = async (req: Request, res: Response) => {
-  const { name, email, password, role } = req.body;
+// Controller para login
+export const loginUser = async (req: Request, res: Response) => {
   try {
-    const user = await registerService(name, email, password, role);
-    res.status(201).send(user);
+    const { email, password } = req.body;
+
+    // Validação de campos
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email e senha são obrigatórios" });
+    }
+
+    // Chama o serviço de login
+    const result = await loginUserService(email, password);
+
+    // Retorna o token gerado
+    res.json(result);
   } catch (error) {
-    res.status(400).send({ error: error });
+    console.error(error);
+    res.status(500).json({ error: "Erro interno do servidor" });
   }
 };
 
-export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  try {
-    const { user, token } = await loginService(email, password);
-    res.send({ user, token });
-  } catch (error) {
-    res.status(400).send({ error: error });
-  }
-};
 

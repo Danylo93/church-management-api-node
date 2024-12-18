@@ -1,11 +1,33 @@
-// src/middleware/authMiddleware.ts
+import { PrismaClient } from '@prisma/client';
 import { Request, Response, NextFunction } from 'express';
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import { IUser } from '../models/User';
+import jwt from 'jsonwebtoken';
 
-interface DecodedToken extends JwtPayload {
-  id: string;
+const prisma = new PrismaClient();
+
+interface JwtPayload {
+  userId: number;
+  email: string;
   role: string;
+  name?: string;
+}
+
+interface IUser {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  discipulador?: {
+    id: number;
+    name: string;
+  };
+  obreiro?: {
+    id: number;
+    name: string;
+  };
+  pastor?: {
+    id: number;
+    name: string;
+  };
 }
 
 declare global {
@@ -16,19 +38,51 @@ declare global {
   }
 }
 
-export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
+const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
+  const token = req.headers['authorization']?.split(' ')[1];
+
   if (!token) {
-    return res.status(401).send({ error: 'Unauthorized' });
+    return res.status(401).json({ message: 'Token não encontrado' });
   }
 
-  try {
-    const decoded = jwt.verify(token, 'your_jwt_secret') as DecodedToken;
-    req.user = { id: decoded.id, role: decoded.role } as unknown as IUser;
-    next();
-  } catch (e) {
-    res.status(401).send({ error: 'Unauthorized' });
-  }
+  jwt.verify(token, process.env.JWT_SECRET || '3f8dcb8b7bb7b9f8b5b4f95c6c7489e6b49d420315a469d9cf8c36fef8d1c743', async (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Token inválido', error: err.message });
+    }
+
+    const user = decoded as JwtPayload;
+
+    try {
+      const userFromDb = await prisma.user.findUnique({
+        where: { email: user.email },
+        include: {
+          discipulador: { select: { id: true, name: true } },
+          obreiro: { select: { id: true, name: true } },
+          pastor: { select: { id: true, name: true } },
+        },
+      });
+
+      if (!userFromDb) {
+        return res.status(404).json({ message: 'Usuário não encontrado' });
+      }
+
+      req.user = {
+        id: userFromDb.id,
+        name: userFromDb.name,
+        email: userFromDb.email,
+        role: userFromDb.role,
+        discipulador: userFromDb.discipulador || undefined,
+        obreiro: userFromDb.obreiro || undefined,
+        pastor: userFromDb.pastor || undefined,
+      };
+
+      next();
+    } catch (error) {
+      console.error('Erro ao buscar usuário no banco de dados', error);
+      return res.status(500).json({ message: 'Erro interno do servidor' });
+    }
+  });
 };
 
 
+export default authenticateToken;

@@ -38,10 +38,10 @@ jobs:
 
     - name: Build and Push Docker Image
       run: |
-        sudo docker build -t dan1993/api-church:latest .
-        sudo docker tag dan1993/api-church:latest dan1993/api-church:${{ github.sha }}
-        sudo docker push dan1993/api-church:latest
-        sudo docker push dan1993/api-church:${{ github.sha }}
+        sudo docker build -t docker.io/dan1993/api-church:latest .
+        sudo docker tag docker.io/dan1993/api-church:latest docker.io/dan1993/api-church:${{ github.sha }}
+        sudo docker push docker.io/dan1993/api-church:latest
+        sudo docker push docker.io/dan1993/api-church:${{ github.sha }}
 
   deploy:
     needs: build
@@ -59,7 +59,7 @@ jobs:
 
     - name: Deploy to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@<SEU_IP_EC2> << 'EOF'
+        ssh -o StrictHostKeyChecking=no ubuntu@52.1.122.82 << 'EOF'
           sudo docker pull dan1993/api-church:latest
           sudo docker stop api-church || true
           sudo docker rm api-church || true

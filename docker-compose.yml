@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://church_owner:8y0QkdXvajGY@ep-autumn-moon-a4qe2dmq.us-east-1.aws.neon.tech/church?sslmode=require
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  db:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: church_owner
+      POSTGRES_PASSWORD: 8y0QkdXvajGY
+      POSTGRES_DB: church
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

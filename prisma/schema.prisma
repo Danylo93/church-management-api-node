@@ -1,5 +1,7 @@
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+
 }
 
 datasource db {
@@ -8,55 +10,47 @@ datasource db {
 }
 
 model User {
-  id              Int      @id @default(autoincrement())
-  name            String
-  email           String   @unique
-  password        String
-  role            String   // Enum seria ideal (Pastor, Obreiro, Discipulador, Líder)
-  phone           String?  // Opcional
-  address         String?  // Opcional
-  photo           String?  // Opcional
-  
-  // Relacionamentos
-  pastorId        Int?     
-  obreiroId       Int?     
-  discipuladorId  Int?     
-
-  pastor          User?    @relation("PastorToObreiro", fields: [pastorId], references: [id])
-  obreiro         User?    @relation("ObreiroToDiscipulador", fields: [obreiroId], references: [id])
-  discipulador    User?    @relation("DiscipuladorToLider", fields: [discipuladorId], references: [id])
-
-  redeObreiros    User[]   @relation("PastorToObreiro")
-  redeDiscipuladores User[] @relation("ObreiroToDiscipulador")
-  lideres         User[]   @relation("DiscipuladorToLider")
-
-  reportDiscip    CellReport[] @relation("DisciplerReports")
-  reportLider     CellReport[] @relation("LeaderReports")
-  reportWorker    CellReport[] @relation("WorkerReports")
-  reportPastor     CellReport[] @relation("PastorReports")
+  id                 Int          @id @default(autoincrement())
+  name               String
+  email              String       @unique
+  password           String
+  role               String
+  address            String?
+  phone              String?
+  photo              String?
+  discipuladorId     Int?
+  obreiroId          Int?
+  pastorId           Int?
+  reportDiscip       CellReport[] @relation("DisciplerReports")
+  reportLider        CellReport[] @relation("LeaderReports")
+  reportPastor       CellReport[] @relation("PastorReports")
+  reportWorker       CellReport[] @relation("WorkerReports")
+  discipulador       User?        @relation("DiscipuladorToLider", fields: [discipuladorId], references: [id])
+  lideres            User[]       @relation("DiscipuladorToLider")
+  obreiro            User?        @relation("ObreiroToDiscipulador", fields: [obreiroId], references: [id])
+  redeDiscipuladores User[]       @relation("ObreiroToDiscipulador")
+  pastor             User?        @relation("PastorToObreiro", fields: [pastorId], references: [id])
+  redeObreiros       User[]       @relation("PastorToObreiro")
 }
 
 model CellReport {
-  id                Int       @id @default(autoincrement())
-  meetingDate       DateTime
-  membersPresent    Int
-  attendees         Int
-  visitors          Int
-  additionalInfo    String?   // Informações adicionais (opcional)
-  cellName          String?   // Nome da célula (opcional)
-  multiplicationDate DateTime? // Data de multiplicação (opcional)
-  cellPhase         String?   // Comunhão, Evangelismo, Edificação, Multiplicação
-  
-  leaderId          Int
-  disciplerId       Int
-  workerId          Int
-  pastorId          Int
-
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-
-  leader            User      @relation("LeaderReports", fields: [leaderId], references: [id])
-  discipler         User      @relation("DisciplerReports", fields: [disciplerId], references: [id])
-  obreiro         User      @relation("WorkerReports", fields: [workerId], references: [id])
-  pastor         User      @relation("PastorReports", fields: [pastorId], references: [id])
+  id                 Int       @id @default(autoincrement())
+  meetingDate        DateTime
+  membersPresent     Int
+  attendees          Int
+  visitors           Int
+  additionalInfo     String?
+  cellName           String?
+  multiplicationDate DateTime?
+  cellPhase          String?
+  leaderId           Int
+  disciplerId        Int
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  pastorId           Int
+  workerId           Int
+  discipler          User      @relation("DisciplerReports", fields: [disciplerId], references: [id])
+  leader             User      @relation("LeaderReports", fields: [leaderId], references: [id])
+  pastor             User      @relation("PastorReports", fields: [pastorId], references: [id])
+  obreiro            User      @relation("WorkerReports", fields: [workerId], references: [id])
 }

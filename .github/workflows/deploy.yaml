@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - develop  # Roda nas mudanças na branch 'master'
+      - developpp  # Roda nas mudanças na branch 'master'
   pull_request:
     branches:
       - master  # Roda para Pull Requests na branch 'master'

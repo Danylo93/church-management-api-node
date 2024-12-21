@@ -38,10 +38,10 @@ jobs:
 
     - name: Build and Push Docker Image
       run: |
-        sudo docker build -t dan1993/api-church:latest .
-        sudo docker tag dan1993/api-church:latest dan1993/api-church:${{ github.sha }}
-        sudo docker push dan1993/api-church:latest
-        sudo docker push dan1993/api-church:${{ github.sha }}
+         docker build -t dan1993/api-church:latest .
+         docker tag dan1993/api-church:latest dan1993/api-church:${{ github.sha }}
+         docker push dan1993/api-church:latest
+         docker push dan1993/api-church:${{ github.sha }}
 
   deploy:
     needs: build

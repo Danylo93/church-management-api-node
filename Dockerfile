@@ -37,7 +37,7 @@ WORKDIR /app
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
-COPY .env .env
+COPY .env.stage .env
 
 # Expor porta
 EXPOSE 3000

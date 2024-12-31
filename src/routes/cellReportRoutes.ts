@@ -7,6 +7,7 @@ import {
   listReportsByDiscipler,
   listReportsByWorker,
   listReportsByPastor,
+  listAllCells,
 } from "../controllers/cellReportController";
 import { getMonthlyReportByDiscipuladorHandler, getMonthlyReportHandler, getPastorMonthlyReport, getWorkerReportHandler } from "../controllers/reportGraphicsController";
 import { getMonthlyReportByDiscipulador } from "../services/reportGraphics";
@@ -28,6 +29,9 @@ router.get("/reports/leaders/monthly", getMonthlyReportHandler);
 router.get("/reports/disciplers/monthly", getMonthlyReportByDiscipuladorHandler);
 router.post("/reports/workers/monthly", getWorkerReportHandler);
 router.post("/reports/pastor/monthly", getPastorMonthlyReport);
+
+router.get("/cells", listAllCells);
+
 
 
 export default router;

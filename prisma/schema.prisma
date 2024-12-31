@@ -1,7 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
-
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -21,6 +20,7 @@ model User {
   discipuladorId     Int?
   obreiroId          Int?
   pastorId           Int?
+  leaderId           Int?
   reportDiscip       CellReport[] @relation("DisciplerReports")
   reportLider        CellReport[] @relation("LeaderReports")
   reportPastor       CellReport[] @relation("PastorReports")
@@ -31,6 +31,32 @@ model User {
   redeDiscipuladores User[]       @relation("ObreiroToDiscipulador")
   pastor             User?        @relation("PastorToObreiro", fields: [pastorId], references: [id])
   redeObreiros       User[]       @relation("PastorToObreiro")
+  cells              Cell[]       @relation("LeaderCells")
+
+  celulasDiscipler Cell[] @relation("DisciplerCells")
+
+  celulasPastor Cell[] @relation("PastorCells")
+
+  Cell Cell[] @relation("WorkerCells")
+}
+
+model Cell {
+  id            Int       @id @default(autoincrement())
+  name          String
+  address       String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  leaderId      Int
+  disciplerId   Int
+  obreiroId     Int
+  pastorId      Int
+  attendees     Int       @default(0)
+  members       Int       @default(0)
+  discipler     User      @relation("DisciplerCells", fields: [disciplerId], references: [id])
+  leader        User      @relation("LeaderCells", fields: [leaderId], references: [id])
+  pastor        User      @relation("PastorCells", fields: [pastorId], references: [id])
+  obreiro       User      @relation("WorkerCells", fields: [obreiroId], references: [id])
+  reports       CellReport[]
 }
 
 model CellReport {
@@ -45,12 +71,23 @@ model CellReport {
   cellPhase          String?
   leaderId           Int
   disciplerId        Int
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
   pastorId           Int
   workerId           Int
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
   discipler          User      @relation("DisciplerReports", fields: [disciplerId], references: [id])
   leader             User      @relation("LeaderReports", fields: [leaderId], references: [id])
   pastor             User      @relation("PastorReports", fields: [pastorId], references: [id])
   obreiro            User      @relation("WorkerReports", fields: [workerId], references: [id])
+
+  Cell Cell[]
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  date        DateTime
+  time        DateTime
+  location    String
 }

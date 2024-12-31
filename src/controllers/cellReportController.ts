@@ -7,7 +7,9 @@ import {
   getCellReportsByDiscipler,
   getCellReportsByWorker,
   getCellReportsByPastor,
+  
 } from "../services/cellReportService";
+import { getAllCells } from "../services/cellService";
 
 // Função auxiliar para formatar erros
 const handleError = (res: Response, error: any, customMessage: string) => {
@@ -21,15 +23,60 @@ const handleError = (res: Response, error: any, customMessage: string) => {
     return res.status(500).json({ error: "Erro interno do servidor", details: error });
   }
 };
-
 export const createReport = async (req: Request, res: Response) => {
+  const {
+    leaderId,
+    disciplerId,
+    pastorId,
+    workerId,
+    meetingDate,
+    membersPresent,
+    attendees,
+    visitors,
+    additionalInfo,
+    cellPhase,
+    multiplicationDate,
+  } = req.body;
+
   try {
-    const report = await createCellReport(req.body);
-    res.status(201).json(report);
+    // Chamar a função correta do serviço
+    const { report, cell } = await createCellReport({
+      leaderId,
+      disciplerId,
+      pastorId,
+      workerId,
+      meetingDate,
+      membersPresent,
+      attendees,
+      visitors,
+      additionalInfo,
+      cellPhase,
+      multiplicationDate,
+    });
+
+    return res.status(201).json({
+      message: "Relatório criado com sucesso!",
+      report,
+      cell,
+    });
   } catch (error) {
     handleError(res, error, "Erro ao criar o relatório da célula.");
   }
 };
+
+// Rota para listar todas as células
+export const listAllCells = async (req: Request, res: Response) => {
+  try {
+    const cells = await getAllCells();
+    if (cells.length === 0) {
+      return res.status(404).json({ error: "Nenhuma célula encontrada." });
+    }
+    res.json(cells);
+  } catch (error) {
+    handleError(res, error, "Erro ao listar as células.");
+  }
+};
+
 
 export const editReport = async (req: Request, res: Response) => {
   try {
@@ -108,3 +155,7 @@ export const listReportsByPastor = async (req: Request, res: Response) => {
     handleError(res, error, "Erro ao listar os relatórios do pastor.");
   }
 };
+function cellReportService(arg0: { leaderId: any; disciplerId: any; pastorId: any; workerId: any; meetingDate: any; membersPresent: any; attendees: any; visitors: any; additionalInfo: any; cellPhase: any; multiplicationDate: any; }): { report: any; cell: any; } | PromiseLike<{ report: any; cell: any; }> {
+  throw new Error("Function not implemented.");
+}
+

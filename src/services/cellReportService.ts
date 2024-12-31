@@ -3,9 +3,88 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-export const createCellReport = async (data: any) => {
-  return prisma.cellReport.create({ data });
+interface CreateReportParams {
+  leaderId: number;
+  disciplerId: number;
+  pastorId: number;
+  workerId: number;
+  meetingDate: string;
+  membersPresent: number;
+  attendees: number;
+  visitors: number;
+  additionalInfo?: string;
+  cellPhase?: string;
+  multiplicationDate?: string;
+}
+
+export const createCellReport = async (data: CreateReportParams) => {
+  const {
+    leaderId,
+    disciplerId,
+    pastorId,
+    workerId,
+    meetingDate,
+    membersPresent,
+    attendees,
+    visitors,
+    additionalInfo,
+    cellPhase,
+    multiplicationDate,
+  } = data;
+
+  // Buscar o nome do líder a partir da tabela user
+  const leader = await prisma.user.findUnique({
+    where: { id: leaderId },
+    select: { name: true },  // Selecionando apenas o nome do líder
+  });
+
+  if (!leader) {
+    throw new Error("Líder não encontrado");
+  }
+
+  // Verificar se já existe uma célula para o líder
+  let cell = await prisma.cell.findFirst({
+    where: { leaderId },
+  });
+
+  // Criar a célula se não existir
+  if (!cell) {
+    cell = await prisma.cell.create({
+      data: {
+        name: `Célula do Líder ${leader.name}`, // Usando o nome do líder
+        address: "Endereço não informado",
+        leaderId,
+        disciplerId,
+        pastorId,
+        obreiroId: workerId,
+        attendees: attendees || 0,
+        members: membersPresent || 0,
+      },
+    });
+  }
+
+  // Criar o relatório vinculado à célula
+  const report = await prisma.cellReport.create({
+    data: {
+      meetingDate,
+      membersPresent,
+      attendees,
+      visitors,
+      additionalInfo,
+      cellPhase,
+      multiplicationDate,
+      leaderId,
+      disciplerId,
+      pastorId,
+      workerId,
+      cellName: cell.name, // Associar ao nome da célula existente
+    },
+  });
+
+  return { report, cell };
 };
+
+
 
 export const updateCellReport = async (id: number, data: any) => {
   return prisma.cellReport.update({

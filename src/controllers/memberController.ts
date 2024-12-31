@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createMemberService, getCellMembers } from "../services/memberService";
+import { createMemberService, getCellAttendes, getCellMembers } from "../services/memberService";
 
 export const createMemberController = async (req: Request, res: Response) => {
     try {
@@ -42,5 +42,22 @@ export const listCellMembers = async (req: Request, res: Response) => {
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: 'Erro ao listar membros da célula' });
+    }
+  };
+
+  export const listCellFrequentador = async (req: Request, res: Response) => {
+    const { leaderId } = req.params;
+  
+    try {
+      const frequentador = await getCellAttendes(parseInt(leaderId));
+  
+      if (frequentador.length === 0) {
+        return res.status(404).json({ message: 'Nenhum frequentador encontrado para o líder especificado' });
+      }
+  
+      return res.status(200).json(frequentador);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Erro ao listar frequentadores da célula' });
     }
   };

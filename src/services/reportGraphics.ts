@@ -39,9 +39,9 @@ export const getMonthlyReport = async (month: number, year: number) => {
 
 
   reports.forEach((report) => {
-    totalMembers += report.membersPresent;
-    totalAttendees += report.attendees;
-    totalVisitors += report.visitors;
+    totalMembers += Array.isArray(report.membersPresent) ? report.membersPresent.reduce((sum, val) => sum + val, 0) : report.membersPresent;
+    totalAttendees += Array.isArray(report.attendees) ? report.attendees.reduce((sum, val) => sum + val, 0) : report.attendees;
+    totalVisitors += Array.isArray(report.visitors) ? report.visitors.reduce((sum, val) => sum + val, 0) : report.visitors;
     reportCount += 1;
   });
 
@@ -124,9 +124,9 @@ export const getMonthlyReportByDiscipulador = async (
   const uniqueLeaderIds = new Set<number>(); // Para armazenar os IDs dos líderes únicos
 
   reports.forEach((report) => {
-    totalMembers += report.membersPresent;
-    totalAttendees += report.attendees;
-    totalVisitors += report.visitors;
+    totalMembers += Array.isArray(report.membersPresent) ? report.membersPresent.reduce((sum, val) => sum + val, 0) : report.membersPresent;
+    totalAttendees += Array.isArray(report.attendees) ? report.attendees.reduce((sum, val) => sum + val, 0) : report.attendees;
+    totalVisitors += Array.isArray(report.visitors) ? report.visitors.reduce((sum, val) => sum + val, 0) : report.visitors;
     reportCount += 1;
 
     if (report.leaderId) {
@@ -219,9 +219,9 @@ export const getMonthlyWorkerReport = async (
   const disciplerIds = new Set<number>();
 
   reports.forEach((report) => {
-    totalMembers += report.membersPresent;
-    totalAttendees += report.attendees;
-    totalVisitors += report.visitors;
+    totalMembers += Array.isArray(report.membersPresent) ? report.membersPresent.reduce((sum, val) => sum + val, 0) : report.membersPresent;
+  totalAttendees += Array.isArray(report.attendees) ? report.attendees.reduce((sum, val) => sum + val, 0) : report.attendees;
+  totalVisitors += Array.isArray(report.visitors) ? report.visitors.reduce((sum, val) => sum + val, 0) : report.visitors;
     reportCount += 1;
 
     if (report.leaderId) {
@@ -328,9 +328,10 @@ export const getMonthlyReportByPastor = async (
   }
 
   // Calcula os totais para médias
-  const totalMembers = reports.reduce((sum, report) => sum + report.membersPresent, 0);
-  const totalAttendees = reports.reduce((sum, report) => sum + report.attendees, 0);
-  const totalVisitors = reports.reduce((sum, report) => sum + report.visitors, 0);
+  const totalMembers = reports.reduce((sum, report) => sum + (Array.isArray(report.membersPresent) ? report.membersPresent.length : report.membersPresent), 0);
+  const totalAttendees = reports.reduce((sum, report) => sum + (Array.isArray(report.attendees) ? report.attendees.length : report.attendees), 0);
+  const totalVisitors = reports.reduce((sum, report) => sum + (Array.isArray(report.visitors) ? report.visitors.length : report.visitors), 0);
+  
   const reportCount = reports.length;
 
   return {

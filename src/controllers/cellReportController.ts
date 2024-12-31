@@ -30,8 +30,8 @@ export const createReport = async (req: Request, res: Response) => {
     pastorId,
     workerId,
     meetingDate,
-    membersPresent,
-    attendees,
+    membersPresent, // Agora é uma lista de IDs de membros presentes
+    attendees, // Lista de IDs de frequentadores presentes
     visitors,
     additionalInfo,
     cellPhase,
@@ -52,6 +52,7 @@ export const createReport = async (req: Request, res: Response) => {
       additionalInfo,
       cellPhase,
       multiplicationDate,
+      address: ""
     });
 
     return res.status(201).json({
@@ -63,6 +64,7 @@ export const createReport = async (req: Request, res: Response) => {
     handleError(res, error, "Erro ao criar o relatório da célula.");
   }
 };
+
 
 // Rota para listar todas as células
 export const listAllCells = async (req: Request, res: Response) => {

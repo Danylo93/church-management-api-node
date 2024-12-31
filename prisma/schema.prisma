@@ -52,6 +52,7 @@ model Cell {
   pastorId      Int
   attendees     Int       @default(0)
   members       Int       @default(0)
+  visitors      Int       @default(0)
   discipler     User      @relation("DisciplerCells", fields: [disciplerId], references: [id])
   leader        User      @relation("LeaderCells", fields: [leaderId], references: [id])
   pastor        User      @relation("PastorCells", fields: [pastorId], references: [id])
@@ -62,8 +63,8 @@ model Cell {
 model CellReport {
   id                 Int       @id @default(autoincrement())
   meetingDate        DateTime
-  membersPresent     Int
-  attendees          Int
+  membersPresent     Int[]
+  attendees          Int[]
   visitors           Int
   additionalInfo     String?
   cellName           String?

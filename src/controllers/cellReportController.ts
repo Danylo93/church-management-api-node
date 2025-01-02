@@ -10,6 +10,11 @@ import {
   
 } from "../services/cellReportService";
 import { getAllCells } from "../services/cellService";
+import { createNotification } from "./notificationController";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
 
 // Função auxiliar para formatar erros
 const handleError = (res: Response, error: any, customMessage: string) => {
@@ -23,6 +28,8 @@ const handleError = (res: Response, error: any, customMessage: string) => {
     return res.status(500).json({ error: "Erro interno do servidor", details: error });
   }
 };
+
+
 export const createReport = async (req: Request, res: Response) => {
   const {
     leaderId,
@@ -30,8 +37,8 @@ export const createReport = async (req: Request, res: Response) => {
     pastorId,
     workerId,
     meetingDate,
-    membersPresent, // Agora é uma lista de IDs de membros presentes
-    attendees, // Lista de IDs de frequentadores presentes
+    membersPresent,
+    attendees,
     visitors,
     additionalInfo,
     cellPhase,
@@ -39,7 +46,7 @@ export const createReport = async (req: Request, res: Response) => {
   } = req.body;
 
   try {
-    // Chamar a função correta do serviço
+    // Chamar a função para criar o relatório e a célula
     const { report, cell } = await createCellReport({
       leaderId,
       disciplerId,
@@ -52,8 +59,29 @@ export const createReport = async (req: Request, res: Response) => {
       additionalInfo,
       cellPhase,
       multiplicationDate,
-      address: ""
+      address: "",
     });
+
+    const leader = await prisma.user.findFirst({
+      where: { id: leaderId, role: 'Líder' }, // Assumindo que o campo role seja 'Líder'
+    });
+
+    // Verificar se o líder foi encontrado
+    if (!leader) {
+      return res.status(404).json({ message: "Líder não encontrado." });
+    }
+
+    // Criar notificação para o discipulador
+    const notificationData = {
+      // Converte disciplerId para número, caso seja string
+      userId: Number(disciplerId),
+      title: 'Novo relatório de célula',
+      message: `O líder ${leader.name} enviou um relatório da célula para você revisar.`,
+    };
+
+
+    // Passa os dados para a função de criar a notificação
+    await createNotification(notificationData);
 
     return res.status(201).json({
       message: "Relatório criado com sucesso!",
@@ -64,6 +92,8 @@ export const createReport = async (req: Request, res: Response) => {
     handleError(res, error, "Erro ao criar o relatório da célula.");
   }
 };
+
+
 
 
 // Rota para listar todas as células

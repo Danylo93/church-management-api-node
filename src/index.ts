@@ -8,6 +8,7 @@ import authRoutes from './routes/authRoutes';
 import cors from 'cors'; // Use a importação correta
 import eventRoutes from './routes/eventRoutes';
 import memberRoutes from './routes/memberRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 
 
 const prisma = new PrismaClient();
@@ -29,6 +30,9 @@ app.use('/api', memberRoutes);  // Usando as rotas de evento
 
 // Rotas de redes e células
 app.use('/api', cellReportRoutes);
+
+app.use('/api', notificationRoutes);
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

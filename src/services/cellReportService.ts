@@ -148,22 +148,29 @@ export const deleteCellReport = async (id: number) => {
 };
 
 export const getCellReportsByLeader = async (leaderId: number) => {
-    return prisma.cellReport.findMany({
-      where: { leaderId },
-      include: {
-        leader: {
-          select: {
-            id: true,
-            name: true, // Incluindo o nome do líder
-          },
+  const reports = await prisma.cellReport.findMany({
+    where: { leaderId },
+    include: {
+      leader: {
+        select: {
+          id: true,
+          name: true, // Incluindo o nome do líder
         },
       },
-      orderBy: { meetingDate: "desc" },
-    });
+    },
+    orderBy: { meetingDate: "desc" },
+  });
+
+    // Transformando `membersPresent` para exibir a quantidade
+  return reports.map((report) => ({
+    ...report,
+    membersPresent: report.membersPresent.length,
+    attendees: report.attendees.length,
+  }));
   };
 
   export const getCellReportsByDiscipler = async (disciplerId: number) => {
-    return prisma.cellReport.findMany({
+    const reports = await prisma.cellReport.findMany({
       where: { disciplerId },
       include: {
         leader: {
@@ -181,10 +188,16 @@ export const getCellReportsByLeader = async (leaderId: number) => {
       },
       orderBy: { meetingDate: "desc" },
     });
+
+    return reports.map((report) => ({
+      ...report,
+      membersPresent: report.membersPresent.length,
+      attendees: report.attendees.length,
+    }));
   };
 
   export const getCellReportsByWorker = async (workerId: number) => {
-    return prisma.cellReport.findMany({
+    const reports = await prisma.cellReport.findMany({
       where: { workerId },
       include: {
         leader: {
@@ -209,10 +222,16 @@ export const getCellReportsByLeader = async (leaderId: number) => {
       },
       orderBy: { meetingDate: "desc" },
     });
+
+    return reports.map((report) => ({
+      ...report,
+      membersPresent: report.membersPresent.length,
+      attendees: report.attendees.length,
+    }));
   };
 
   export const getCellReportsByPastor = async (pastorId: number) => {
-    return prisma.cellReport.findMany({
+    const reports = await prisma.cellReport.findMany({
       where: { pastorId },
       include: {
         leader: {
@@ -242,5 +261,11 @@ export const getCellReportsByLeader = async (leaderId: number) => {
       },
       orderBy: { meetingDate: "desc" },
     });
+
+    return reports.map((report) => ({
+      ...report,
+      membersPresent: report.membersPresent.length,
+      attendees: report.attendees.length,
+    }));
   };
   

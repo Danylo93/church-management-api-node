@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt"; // Para criptografar a senha
+import bcrypt from "bcryptjs"; // Para criptografar a senha
 
 const prisma = new PrismaClient();
 
@@ -65,7 +65,7 @@ export const createMemberService = async (memberData: MemberData) => {
       ...memberInfo,
       phone: memberInfo.phone || null,
       address: memberInfo.address || null,
-      photo: memberInfo.photo || null,
+      photo: 'https://via.placeholder.com/150',
     };
 
     // Cria o membro com vínculo ao líder

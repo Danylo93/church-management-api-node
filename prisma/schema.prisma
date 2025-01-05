@@ -85,12 +85,25 @@ model CellReport {
 }
 
 model Event {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String
-  date        DateTime
-  time        DateTime
-  location    String
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  image        String?
+  startDate    DateTime
+  endDate      DateTime
+  formFields   Json     // Campos do formulário (dinâmicos)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  registration Registration[]
+}
+
+model Registration {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  userId    String   // ID do usuário logado
+  answers   Json     // Respostas para o formulário
+  createdAt DateTime @default(now())
 }
 
 // schema.prisma

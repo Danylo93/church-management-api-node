@@ -1,26 +1,38 @@
-// src/controllers/eventController.ts
-import { Request, Response } from 'express';
-import * as eventService from '../services/eventService';
+import { Request, Response } from "express";
+import { EventService } from "../services/eventService";
 
-export const createEvent = async (req: Request, res: Response) => {
-  try {
-    const eventData = req.body;
-    const newEvent = await eventService.createEvent(eventData);
-    res.status(201).json(newEvent);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Erro ao criar evento', error: error });
+export class EventController {
+  private eventService: EventService;
+
+  constructor() {
+    this.eventService = new EventService();
   }
-};
 
+  async createEvent(req: Request, res: Response) {
+    const { name, description, startDate,image, endDate, formFields } = req.body;
 
-// Função para listar eventos
-export const getEvents = async (req: Request, res: Response) => {
     try {
-      const events = await eventService.getEvents();
-      res.status(200).json(events);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Erro ao listar eventos', error: error });
+      const event = await this.eventService.createEvent({
+        name,
+        image,
+        description,
+        startDate,
+        endDate,
+        formFields,
+      });
+      res.status(201).json(event);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
-  };
+  }
+
+  async getEventById(req: Request, res: Response) {
+   
+    try {
+      const event = await this.eventService.getEventById();
+      res.status(200).json(event);
+    } catch (error: any) {
+      res.status(404).json({ error: error.message });
+    }
+  }
+}

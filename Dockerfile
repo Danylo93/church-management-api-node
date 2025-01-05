@@ -7,6 +7,9 @@ WORKDIR /app
 # Copiar arquivos necessários
 COPY package.json yarn.lock ./
 
+# Instalar dependências do sistema, incluindo OpenSSL
+RUN apk add --no-cache python3 make g++ openssl
+
 # Instalar dependências
 RUN yarn install --frozen-lockfile
 
@@ -25,10 +28,13 @@ RUN yarn build
 # Remover dependências de desenvolvimento
 RUN yarn install --production --frozen-lockfile
 
-RUN apk add --no-cache openssl
+RUN apk add --no-cache python3 make g++ && \
+    yarn install --production --frozen-lockfile && \
+    apk del python3 make g++
+
 
 # Etapa 2: Criar a imagem final para produção
-FROM node:18-alpine
+FROM node:22-alpine
 
 # Definir diretório de trabalho
 WORKDIR /app

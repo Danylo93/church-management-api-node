@@ -9,8 +9,8 @@ export class EventController {
   }
 
   async createEvent(req: Request, res: Response) {
-    const { name, description, startDate,image, endDate, formFields } = req.body;
-
+    const { name, description, startDate, image, endDate, formUrl } = req.body;
+  
     try {
       const event = await this.eventService.createEvent({
         name,
@@ -18,13 +18,16 @@ export class EventController {
         description,
         startDate,
         endDate,
-        formFields,
+        formUrl, // Substituindo formFields pelo link
       });
+      console.log('Dados recebidos no servidor:', req.body);
+
       res.status(201).json(event);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }
+  
 
   async getEventById(req: Request, res: Response) {
    

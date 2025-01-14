@@ -8,7 +8,7 @@ interface CreateEventData {
   image: string;
   startDate: Date;
   endDate: Date;
-  formFields: any; // Campos dinâmicos do formulário
+  formUrl: string;
 }
 
 export class EventService {
@@ -20,10 +20,11 @@ export class EventService {
         description: data.description,
         startDate: new Date(data.startDate),
         endDate: new Date(data.endDate),
-        formFields: data.formFields,
+        formUrl: data.formUrl, // Armazenando o link do formulário
       },
     });
   }
+  
 
   async getEventById() {
     const event = await prisma.event.findMany();

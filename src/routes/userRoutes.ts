@@ -10,6 +10,9 @@ import {
   fetchUsersByRole,
   updatePhoto,
 } from "../controllers/userController";
+import { handleChildStatusUpdate, registerChildController } from "../controllers/generateQRCodeForChildController";
+import { getChildrenByParent } from "../controllers/childController";
+import { listFiles, uploadFile } from "../controllers/fileController";
 
 const router = Router();
 
@@ -26,6 +29,14 @@ router.get("/disciplers-by-worker/:workerId", listDisciplersByWorker); // Listar
 router.get("/users/:userId/details", getUserDetailsController);
 
 router.get("/find/users-role", fetchUsersByRole)
+
+router.post('/children', registerChildController);
+router.post("/children/update-status", handleChildStatusUpdate);
+router.get('/children/parent/:parentId', getChildrenByParent);
+
+router.post('/files/upload', uploadFile);
+router.get('/files/list', listFiles);
+
 
 
 

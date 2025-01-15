@@ -8,6 +8,8 @@ import authRoutes from './routes/authRoutes';
 import cors from 'cors'; // Use a importação correta
 import eventRoutes from './routes/eventRoutes';
 import memberRoutes from './routes/memberRoutes';
+import notificationRoutes from './routes/notificationRoutes';
+import registrationRoutes from './routes/registration.routes';
 
 
 const prisma = new PrismaClient();
@@ -30,7 +32,12 @@ app.use('/api', memberRoutes);  // Usando as rotas de evento
 // Rotas de redes e células
 app.use('/api', cellReportRoutes);
 
-const PORT = process.env.PORT || 3001;
+app.use('/api', notificationRoutes);
+
+app.use("/api/registrations", registrationRoutes);
+
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

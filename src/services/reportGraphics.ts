@@ -3,10 +3,11 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+
+
 export const getMonthlyReport = async (month: number, year: number) => {
-  // Buscar os relatórios do mês e ano fornecidos
-  const startOfMonthDate = new Date(year, month - 1, 1); // Primeira data do mês
-  const endOfMonthDate = new Date(year, month, 0); // Última data do mês
+  const startOfMonthDate = startOfMonth(new Date(year, month - 1));
+  const endOfMonthDate = endOfMonth(new Date(year, month - 1));
 
   const reports = await prisma.cellReport.findMany({
     where: {
@@ -14,9 +15,7 @@ export const getMonthlyReport = async (month: number, year: number) => {
         gte: startOfMonthDate,
         lte: endOfMonthDate,
       },
-      
     },
-    
     select: {
       meetingDate: true,
       membersPresent: true,
@@ -24,40 +23,52 @@ export const getMonthlyReport = async (month: number, year: number) => {
       visitors: true,
       leader: {
         select: {
-          name: true, // Nome do líder
+          name: true,
         },
       },
     },
   });
 
-  // Calcular as somas e médias de membros e frequentadores
+  // Retorna valores padrão se não houver relatórios no período
+  if (!reports.length) {
+    return {
+      month: `${year}-${String(month).padStart(2, '0')}`,
+      leaderName: null,
+      totalMembers: 0, // Corrigido para totalMembers
+      averageMembers: 0,
+      averageAttendees: 0,
+      averageVisitors: 0,
+    };
+  }
+
   let totalMembers = 0;
   let totalAttendees = 0;
   let totalVisitors = 0;
-  let reportCount = 0;
-  let leaderName = reports[0]?.leader?.name || "Líder não encontrado"; // Obtém o nome do líder
-
 
   reports.forEach((report) => {
-    totalMembers += report.membersPresent;
-    totalAttendees += report.attendees;
-    totalVisitors += report.visitors;
-    reportCount += 1;
+    // Contando membros presentes
+    const membersCount = Array.isArray(report.membersPresent) ? report.membersPresent.length : 0;
+    totalMembers += membersCount;
+
+    // Contando participantes
+    const attendeesCount = Array.isArray(report.attendees) ? report.attendees.length : 0;
+    totalAttendees += attendeesCount;
+
+    // Contando visitantes
+    totalVisitors += report.visitors || 0; // Assumindo que visitantes é um número ou null
   });
 
-  // Calcular as médias e arredondar para inteiro
-  const averageMembers = reportCount ? Math.round(totalMembers / reportCount) : 0;
-  const averageAttendees = reportCount ? Math.round(totalAttendees / reportCount) : 0;
-  const averageVisitors = reportCount ? Math.round(totalVisitors / reportCount) : 0;
+  const reportCount = reports.length;
 
   return {
     month: `${year}-${String(month).padStart(2, '0')}`,
-    leaderName,
-    averageMembers,
-    averageAttendees,
-    averageVisitors,
+    leaderName: reports[0].leader?.name || 'Líder não encontrado',
+    averageMembers: Math.round(totalMembers / reportCount),
+    averageAttendees: Math.round(totalAttendees / reportCount),
+    averageVisitors: Math.round(totalVisitors / reportCount),
   };
 };
+
 
 
 export const getMonthlyReportByDiscipulador = async (
@@ -124,9 +135,9 @@ export const getMonthlyReportByDiscipulador = async (
   const uniqueLeaderIds = new Set<number>(); // Para armazenar os IDs dos líderes únicos
 
   reports.forEach((report) => {
-    totalMembers += report.membersPresent;
-    totalAttendees += report.attendees;
-    totalVisitors += report.visitors;
+    totalMembers += Array.isArray(report.membersPresent) ? report.membersPresent.reduce((sum, val) => sum + val, 0) : report.membersPresent;
+    totalAttendees += Array.isArray(report.attendees) ? report.attendees.reduce((sum, val) => sum + val, 0) : report.attendees;
+    totalVisitors += Array.isArray(report.visitors) ? report.visitors.reduce((sum, val) => sum + val, 0) : report.visitors;
     reportCount += 1;
 
     if (report.leaderId) {
@@ -219,9 +230,9 @@ export const getMonthlyWorkerReport = async (
   const disciplerIds = new Set<number>();
 
   reports.forEach((report) => {
-    totalMembers += report.membersPresent;
-    totalAttendees += report.attendees;
-    totalVisitors += report.visitors;
+    totalMembers += Array.isArray(report.membersPresent) ? report.membersPresent.reduce((sum, val) => sum + val, 0) : report.membersPresent;
+  totalAttendees += Array.isArray(report.attendees) ? report.attendees.reduce((sum, val) => sum + val, 0) : report.attendees;
+  totalVisitors += Array.isArray(report.visitors) ? report.visitors.reduce((sum, val) => sum + val, 0) : report.visitors;
     reportCount += 1;
 
     if (report.leaderId) {
@@ -328,9 +339,10 @@ export const getMonthlyReportByPastor = async (
   }
 
   // Calcula os totais para médias
-  const totalMembers = reports.reduce((sum, report) => sum + report.membersPresent, 0);
-  const totalAttendees = reports.reduce((sum, report) => sum + report.attendees, 0);
-  const totalVisitors = reports.reduce((sum, report) => sum + report.visitors, 0);
+  const totalMembers = reports.reduce((sum, report) => sum + (Array.isArray(report.membersPresent) ? report.membersPresent.length : report.membersPresent), 0);
+  const totalAttendees = reports.reduce((sum, report) => sum + (Array.isArray(report.attendees) ? report.attendees.length : report.attendees), 0);
+  const totalVisitors = reports.reduce((sum, report) => sum + (Array.isArray(report.visitors) ? report.visitors.length : report.visitors), 0);
+  
   const reportCount = reports.length;
 
   return {

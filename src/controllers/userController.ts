@@ -10,6 +10,13 @@ import {
   getUserDetails,
   getUsersByRole,
 } from "../services/userService";
+import multer from 'multer';
+
+import { updateUserPhoto } from '../services/userService';
+
+// Configuração do multer para o upload de arquivos
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 
 // Função auxiliar para formatar erros
@@ -57,6 +64,39 @@ export const listUsers = async (_req: Request, res: Response) => {
     handleError(res, error, "Erro ao listar usuários.");
   }
 };
+
+
+
+
+
+export const updatePhoto = [
+  // Middleware do multer para upload da foto
+  upload.single('photo'),
+  
+  // Controlador para atualizar a foto
+  async (req: Request, res: Response) => {
+    try {
+
+      const { userId } = req.params;
+
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ message: 'Foto não fornecida.' });
+      }
+
+      const updatedUser = await updateUserPhoto(Number(userId), file);
+
+      return res.status(200).json({
+        message: 'Foto atualizada com sucesso!',
+        user: updatedUser,
+      });
+    } catch (error) {
+      return res.status(500).json({ message: 'Erro ao atualizar a foto.', error: error });
+    }
+  },
+];
+
 
 export const listLeadersByDiscipler = async (req: Request, res: Response) => {
   try {

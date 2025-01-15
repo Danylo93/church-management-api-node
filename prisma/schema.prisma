@@ -38,6 +38,9 @@ model User {
   celulasPastor Cell[] @relation("PastorCells")
 
   Cell Cell[] @relation("WorkerCells")
+
+
+  Child Child[]
 }
 
 model Cell {
@@ -52,6 +55,7 @@ model Cell {
   pastorId      Int
   attendees     Int       @default(0)
   members       Int       @default(0)
+  visitors      Int       @default(0)
   discipler     User      @relation("DisciplerCells", fields: [disciplerId], references: [id])
   leader        User      @relation("LeaderCells", fields: [leaderId], references: [id])
   pastor        User      @relation("PastorCells", fields: [pastorId], references: [id])
@@ -62,8 +66,8 @@ model Cell {
 model CellReport {
   id                 Int       @id @default(autoincrement())
   meetingDate        DateTime
-  membersPresent     Int
-  attendees          Int
+  membersPresent     Int[]
+  attendees          Int[]
   visitors           Int
   additionalInfo     String?
   cellName           String?
@@ -84,10 +88,52 @@ model CellReport {
 }
 
 model Event {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String
-  date        DateTime
-  time        DateTime
-  location    String
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  image        String?
+  startDate    DateTime
+  endDate      DateTime
+  formUrl     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  registration Registration[]
+}
+
+model Registration {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  userId    String   // ID do usuário logado
+  answers   Json     // Respostas para o formulário
+  createdAt DateTime @default(now())
+}
+
+// schema.prisma
+model Notification {
+  id        String   @id @default(uuid()) // ID único gerado automaticamente
+  userId    Int?   // ID do usuário associado à notificação
+  title     String   // Título da notificação
+  message   String   // Mensagem da notificação
+  read      Boolean  @default(false) // Status de leitura da notificação
+  createdAt DateTime @default(now()) // Data de criação da notificação
+}
+
+model Child {
+  id        Int    @id @default(autoincrement())
+  name      String
+  age       Int
+  room      String
+  parentId  Int
+  parent    User   @relation(fields: [parentId], references: [id])
+  status    String @default("ativo") // "ativo" ou "retirada"
+}
+
+
+model Arquivos {
+  id       Int      @id @default(autoincrement())
+  fileName String   @unique
+  titulo   String
+  dataCulto DateTime
+  fileUrl  String
 }

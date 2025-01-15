@@ -2,6 +2,12 @@ Subindo imagem dockerfile no docker hub para x86_x64
 
 docker buildx build --platform linux/amd64,linux/arm64 -t dan1993/api-church:latest --push .
 
+---------------
+
+acessar ec2:
+
+ssh -i church_api.pem ubuntu@52.1.122.82 
+
 -----------------------
 
 Banco de Dados Prisma:

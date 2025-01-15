@@ -1,6 +1,7 @@
 // src/services/userService.ts
 import { PrismaClient, User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { deleteFromS3, uploadToS3 } from './s3';
 
 const prisma = new PrismaClient();
 
@@ -44,6 +45,31 @@ export const updateUser = async (id: number, data: any) => {
     where: { id },
     data,
   });
+};
+
+export const updateUserPhoto = async (userId: number, file: Express.Multer.File) => {
+  // Recupera o usuário atual para pegar a URL da foto antiga
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  // Se já tiver uma foto, remova do S3
+  if (user?.photo) {
+    await deleteFromS3(user.photo);
+  }
+
+  // Faz o upload da nova foto para o S3
+  const newPhotoUrl = await uploadToS3(file);
+
+  // Atualiza o usuário no banco de dados com a nova URL da foto
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      photo: newPhotoUrl,
+    },
+  });
+
+  return updatedUser;
 };
 
 export const deleteUser = async (id: number) => {

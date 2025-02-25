@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Cell" ADD COLUMN     "whatsapp" TEXT,
+ALTER COLUMN "latitude" DROP NOT NULL,
+ALTER COLUMN "longitude" DROP NOT NULL,
+ALTER COLUMN "schedule" DROP NOT NULL;

@@ -2,23 +2,23 @@ import { Request, Response } from 'express';
 import { createCell, getAllCells } from '../services/cellService';
 
 export const addCell = async (req: Request, res: Response) => {
-    try {
-      const { leaderId, disciplerId, obreiroId, pastorId, whatsapp, cep, schedule } = req.body;
-  
-      // Validate input
-      if (!leaderId || !disciplerId || !obreiroId || !pastorId || !whatsapp || !cep || !schedule) {
-        return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
-      }
-  
-      // Create the cell
-      const cell = await createCell({ leaderId, disciplerId, obreiroId, pastorId, whatsapp, cep, schedule });
-  
-      res.status(201).json(cell);
-    } catch (error) {
-      console.error('Erro ao adicionar célula:', error);
-      res.status(500).json({ message: error });
+  try {
+    const { leaderId, disciplerId, obreiroId, pastorId, whatsapp, address, schedule } = req.body;
+
+    // Validate input
+    if (!leaderId || !disciplerId || !obreiroId || !pastorId || !whatsapp || !address || !schedule) {
+      return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
     }
-  };
+
+    // Create the cell
+    const cell = await createCell({ leaderId, disciplerId, obreiroId, pastorId, whatsapp, address, schedule });
+
+    res.status(201).json(cell);
+  } catch (error) {
+    console.error('Erro ao adicionar célula:', error);
+    res.status(500).json({ message: error });
+  }
+};
 
 export const listCells = async (req: Request, res: Response) => {
     try {

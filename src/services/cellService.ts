@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import { getAddressFromCep } from '../utils/viacep';
 import { geocodeAddress } from '../utils/nominatim';
 
 const prisma = new PrismaClient();
@@ -10,12 +9,12 @@ interface CreateCellData {
   obreiroId: number;
   pastorId: number;
   whatsapp: string;
-  cep: string;
+  address: string;
   schedule: string;
 }
 
 export const createCell = async (data: CreateCellData) => {
-  const { leaderId, disciplerId, obreiroId, pastorId, whatsapp, cep, schedule } = data;
+  const { leaderId, disciplerId, obreiroId, pastorId, whatsapp, address, schedule } = data;
 
   // Verificar se os IDs fornecidos existem na tabela User
   const users = await prisma.user.findMany({
@@ -28,12 +27,11 @@ export const createCell = async (data: CreateCellData) => {
     throw new Error('Um ou mais IDs fornecidos não existem na tabela User');
   }
 
-  // Get the address from the CEP
-  const address = await getAddressFromCep(cep);
-  console.log('Endereço completo:', address);
-
   // Geocode the address to get latitude and longitude
   const { latitude, longitude } = await geocodeAddress(address);
+  if (!latitude || !longitude) {
+    throw new Error('Endereço não encontrado');
+  }
   console.log('Latitude e Longitude:', latitude, longitude);
 
   // Create the cell in the database
@@ -54,6 +52,7 @@ export const createCell = async (data: CreateCellData) => {
 
   return cell;
 };
+
 export const getAllCells = async () => {
   const cells = await prisma.cell.findMany({
     include: {

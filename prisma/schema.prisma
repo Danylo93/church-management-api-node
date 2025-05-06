@@ -33,12 +33,18 @@ model User {
   redeObreiros       User[]       @relation("PastorToObreiro")
   cells              Cell[]       @relation("LeaderCells")
 
+  isOnline  Boolean  @default(false)
   celulasDiscipler Cell[] @relation("DisciplerCells")
 
   celulasPastor Cell[] @relation("PastorCells")
 
   Cell Cell[] @relation("WorkerCells")
 
+  enrollments Enrollment[]
+  enrollmentsAsLeader       Enrollment[] @relation("Leader")
+  enrollmentsAsDiscipulador Enrollment[] @relation("Discipulador")
+  enrollmentsAsObreiro      Enrollment[] @relation("Obreiro")
+  enrollmentsAsPastor       Enrollment[] @relation("Pastor")
 
   Child Child[]
 }
@@ -47,6 +53,10 @@ model Cell {
   id            Int       @id @default(autoincrement())
   name          String
   address       String
+  latitude      Float?
+  longitude     Float?
+  schedule      String?
+  whatsapp      String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   leaderId      Int
@@ -137,3 +147,34 @@ model Arquivos {
   dataCulto DateTime
   fileUrl  String
 }
+
+model Course {
+  id    String   @id @default(uuid())
+  name  String   @unique
+  description String
+  enrollments Enrollment[]
+}
+
+model Enrollment {
+  id             String   @id @default(uuid())
+  courseId       String
+  name           String
+  email          String
+  phone          String?
+  address        String?
+  leaderId       Int?
+  discipuladorId Int?
+  obreiroId      Int?
+  pastorId       Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  course         Course   @relation(fields: [courseId], references: [id])
+  leader         User?    @relation("Leader", fields: [leaderId], references: [id])
+  discipulador   User?    @relation("Discipulador", fields: [discipuladorId], references: [id])
+  obreiro        User?    @relation("Obreiro", fields: [obreiroId], references: [id])
+  pastor         User?    @relation("Pastor", fields: [pastorId], references: [id])
+
+  User User[]
+}
+

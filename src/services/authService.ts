@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { getUserByEmail } from "./userService"; // Para consultar o usuário por email
+import axios from "axios";
 
 const prisma = new PrismaClient();
 
@@ -13,34 +13,61 @@ const validatePassword = async (inputPassword: string, storedPassword: string): 
   return bcrypt.compare(inputPassword, storedPassword); // Comparando as senhas hashadas
 };
 
-// Função para login
 export const loginUserService = async (email: string, password: string) => {
-  // Buscar o usuário no banco de dados
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
+  try {
+    // Verifica se o usuário existe no banco de dados do app
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-  // Se o usuário não for encontrado
-  if (!user) {
-    throw new Error("Credenciais inválidas");
+    if (!user) {
+      // Erro específico: usuário não encontrado
+      throw { status: 404, message: "Usuário não encontrado. Verifique o email informado." };
+    }
+
+    // Consultar o status do tenant no SaaS
+    const tenantSubdomain = user.tenantSubdomain; // Subdomínio do tenant
+
+    // Consultar o status do tenant via API do SaaS
+    const { data: tenantStatus } = await axios.get(
+      `http://localhost:5000/api/tenants/status/${tenantSubdomain}`  // Altere o URL para o endpoint do SaaS
+    );
+
+    // Verifica se o tenant está ativo
+    if (!tenantStatus || tenantStatus.active !== true) {
+      // Erro específico: plano do tenant inativo
+      throw { status: 403, message: "O plano do tenant não está ativo. Acesso negado." };
+    }
+
+    // Verifica a senha do usuário
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    if (!validPassword) {
+      // Erro específico: senha incorreta
+      throw { status: 401, message: "Senha incorreta. Tente novamente." };
+    }
+
+    // Gera o token JWT para o usuário
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        tenantSubdomain: user.tenantSubdomain,  // Usando o tenantSubdomain em vez do tenantId
+        email: user.email
+      },
+      JWT_SECRET,  // Sua chave secreta do JWT
+      { expiresIn: "1h" }  // Tempo de expiração do token
+    );
+
+    return { token };
+
+  } catch (error: any) {
+    // Captura de erros personalizados
+    if (error.status && error.message) {
+      throw { status: error.status, message: error.message };  // Repassando o erro com status e mensagem
+    } else {
+      // Erro geral de servidor ou outro tipo de erro
+      console.error("Erro inesperado:", error);
+      throw { status: 500, message: "Erro interno do servidor. Tente novamente mais tarde." };
+    }
   }
-
-  // Validar a senha fornecida
-  const isPasswordValid = await validatePassword(password, user.password);
-
-  if (!isPasswordValid) {
-    throw new Error("Credenciais inválidas");
-  }
-
-  // Gerar o token JWT
-  const token = jwt.sign(
-    { userId: user.id, email: user.email, role: user.role },
-    JWT_SECRET,
-    { expiresIn: "1h" }
-  );
-
-  return {
-    message: "Login bem-sucedido",
-    token,
-  };
 };

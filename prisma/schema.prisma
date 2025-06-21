@@ -21,6 +21,7 @@ model User {
   obreiroId          Int?
   pastorId           Int?
   leaderId           Int?
+  tenantSubdomain    String
   reportDiscip       CellReport[] @relation("DisciplerReports")
   reportLider        CellReport[] @relation("LeaderReports")
   reportPastor       CellReport[] @relation("PastorReports")

@@ -78,6 +78,7 @@ export const createMemberService = async (memberData: MemberData) => {
         obreiroId: leader.obreiroId, // Herdando o obreiro do líder
         pastorId: leader.pastorId, // Herdando o pastor do líder
         role: memberData.role, // Atribuindo o papel ao novo membro
+        tenantSubdomain: leader.tenantSubdomain, // Herdando o tenantSubdomain do líder
       },
     });
 

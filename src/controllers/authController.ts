@@ -6,20 +6,24 @@ export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    // Validação de campos
+    // Validação de campos obrigatórios
     if (!email || !password) {
-      return res.status(400).json({ message: "Email e senha são obrigatórios" });
+      return res.status(400).json({
+        message: "Email e senha são obrigatórios",
+      });
     }
 
-    // Chama o serviço de login
+    // Chama o serviço de login para o usuário
     const result = await loginUserService(email, password);
 
-    // Retorna o token gerado
-    res.json(result);
-  } catch (error) {
+    // Retorna o token JWT gerado
+    return res.json({
+      message: "Login bem-sucedido",
+      token: result.token,
+    });
+  } catch (error: any) {
     console.error(error);
-    res.status(500).json({ error: "Erro interno do servidor" });
+    res.status(500).json({ error: error.message || "Erro interno do servidor" });
   }
 };
-
 

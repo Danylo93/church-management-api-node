@@ -25,3 +25,11 @@ Produção: http://IP_DE_PROD:3000
 --------------------------
 
 ANSIBLE / 
+## Kubernetes
+
+Arquivos de manifesto para Kubernetes estao no diretorio `k8s/`. Configure as variaveis de ambiente e aplique com:
+
+```bash
+kubectl apply -f k8s/
+```
+

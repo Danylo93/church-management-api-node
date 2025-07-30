@@ -4,32 +4,32 @@ docker buildx build --platform linux/amd64,linux/arm64 -t dan1993/api-church:lat
 
 ---------------
 
-acessar ec2:
-
-ssh -i church_api.pem ubuntu@52.1.122.82 
-
------------------------
-
 Banco de Dados Prisma:
 
 DATABASE_URL="postgresql://usuario:senha@localhost:5432/db?schema=public"
 
 -----------------------
 
-Ambientes :
 
-Dev: localhost:3000
-Stage: http://52.1.122.82:3000
-Produção: http://IP_DE_PROD:3000
+# 📦 Helm Chart - Church API
 
---------------------------
+Este chart instala o backend da Church Management API em clusters Kubernetes com suporte a:
 
-ANSIBLE / 
-## Kubernetes
+- Deploy em multicloud (AKS, EKS, GKE)
+- Readiness & Liveness probes
+- Autoescalonamento com HPA
+- Ingress com TLS (Cert Manager)
+- Secrets gerenciados com ExternalSecrets
+- Monitoramento com Prometheus
 
-Arquivos de manifesto para Kubernetes estao no diretorio `k8s/`. Configure as variaveis de ambiente e aplique com:
+---
 
+## 🛠️ Como usar
+
+### 1. Instalar
 ```bash
-kubectl apply -f k8s/
-```
+helm upgrade --install church-api ./helm/church-api \
+  -n production \
+  -f helm/church-api/values-prod.yaml
+
 

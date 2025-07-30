@@ -5,10 +5,10 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
     inputs:
-        environment:
-          description: "Ambiente (dev ou prod)"
-          required: true
-          default: "dev"
+      environment:
+        description: "Ambiente (dev, staging ou prod)"
+        required: true
+        default: "dev"
 
 env:
   TF_VAR_location: "eastus"
@@ -31,23 +31,39 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Select tfvars file
+        id: tfvars
+        run: |
+          case "${{ github.event.inputs.environment }}" in
+            dev) echo "file=terraform.dev.tfvars" >> "$GITHUB_OUTPUT" ;;
+            staging) echo "file=terraform.stage.tfvars" >> "$GITHUB_OUTPUT" ;;
+            *) echo "file=terraform.tfvars" >> "$GITHUB_OUTPUT" ;;
+          esac
+
       - name: Terraform Init
         working-directory: ./infra
         run: terraform init
 
       - name: Terraform Plan
         working-directory: ./infra
-        run: terraform plan -var-file=terraform.tfvars
+        run: terraform plan -var-file=${{ steps.tfvars.outputs.file }}
 
       - name: Terraform Apply
+        id: apply
         working-directory: ./infra
-        run: terraform apply -auto-approve -var-file=terraform.tfvars
+        run: terraform apply -auto-approve -var-file=${{ steps.tfvars.outputs.file }}
 
-      - name: Set Kubeconfig
+      - name: Get kubeconfig
+        id: kubeconf
         working-directory: ./infra
         run: |
-          echo "${{ steps.deploy.outputs.kube_config }}" > kubeconfig
-          export KUBECONFIG=$(pwd)/kubeconfig
+          terraform output -raw kube_config > kubeconfig
+          echo "kube_config=$(cat kubeconfig)" >> "$GITHUB_OUTPUT"
+
+      - name: Set Kubeconfig
+        run: |
+          echo "${{ steps.kubeconf.outputs.kube_config }}" > ${{ runner.temp }}/kubeconfig
+          echo "KUBECONFIG=${{ runner.temp }}/kubeconfig" >> $GITHUB_ENV
 
       - name: Install Helm
         uses: azure/setup-helm@v3

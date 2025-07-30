@@ -39,11 +39,15 @@ FROM node:22-alpine
 # Definir diretório de trabalho
 WORKDIR /app
 
+# Variável para escolher o arquivo de ambiente durante o build
+ARG ENV_FILE=.env.stage
+
 # Copiar apenas os arquivos necessários da etapa anterior
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
-COPY .env.stage .env
+# Copiar o arquivo de variáveis de ambiente correspondente
+COPY ${ENV_FILE} .env
 
 # Expor porta
 EXPOSE 3000

@@ -11,9 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install Dependencies
-        run: npm ci
-      - name: Run npm audit
-        run: npm audit --audit-level=high
+        run: yarn install --frozen-lockfile
+      - name: Run audit
+        run: yarn audit --groups dependencies --level high
       - name: Docker Scan
         uses: aquasecurity/trivy-action@master
         with:

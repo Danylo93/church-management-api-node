@@ -26,6 +26,18 @@ A imagem Docker permite escolher qual arquivo de ambiente será copiado através
    ```bash
    yarn dev
    ```
+## Ambiente de desenvolvimento em AKS
+1. Construa a imagem de desenvolvimento:
+```bash
+docker build --build-arg ENV_FILE=.env.dev -t church-api:dev .
+```
+2. Implante com Helm:
+```bash
+helm upgrade --install church-api-dev ./helm/church-api 
+  -n dev 
+  -f helm/church-api/values-dev.yaml
+```
+
 
 ## Ambiente de staging
 1. Construa a imagem usando o arquivo de ambiente de stage:
@@ -47,6 +59,7 @@ A imagem Docker permite escolher qual arquivo de ambiente será copiado através
    terraform init
    terraform apply -var-file=terraform.tfvars
    ```
+   Os arquivos `terraform.*.tfvars` definem parâmetros como `dns_prefix` e os limites de autoscaling (`node_min_count` e `node_max_count`). Ajuste-os conforme a necessidade do seu ambiente.
 2. Construa e envie a imagem multi-arquitetura com o arquivo de produção:
    ```bash
    docker buildx build --platform linux/amd64,linux/arm64 \

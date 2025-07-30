@@ -7,11 +7,15 @@ resource "azurerm_kubernetes_cluster" "aks" {
   name                = var.cluster_name
   location            = var.location
   resource_group_name = var.resource_group_name
+  dns_prefix          = var.dns_prefix
 
   default_node_pool {
     name       = "default"
     node_count = var.node_count
     vm_size    = var.node_size
+    enable_auto_scaling = true
+    min_count           = var.node_min_count
+    max_count           = var.node_max_count
   }
 
   identity {

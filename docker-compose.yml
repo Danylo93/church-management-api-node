@@ -5,8 +5,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
-      - DATABASE_URL=postgresql://church_owner:8y0QkdXvajGY@ep-autumn-moon-a4qe2dmq.us-east-1.aws.neon.tech/church?sslmode=require
+      args:
+        ENV_FILE: .env.dev
+    env_file:
+      - .env.dev
     ports:
       - "3000:3000"
     depends_on:

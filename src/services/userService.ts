@@ -28,14 +28,28 @@ export const createUser = async (data: any) => {
     throw new Error("Obreiro precisa de pastor.");
   }
 
+  // Buscar o tenantSubdomain do pastor, se pastorId estiver presente
+  let tenantSubdomain = data.tenantSubdomain;
+  if (pastorId) {
+    const pastor = await prisma.user.findUnique({
+      where: { id: pastorId },
+      select: { tenantSubdomain: true },
+    });
+    if (!pastor) {
+      throw new Error("Pastor não encontrado.");
+    }
+    tenantSubdomain = pastor.tenantSubdomain;
+  }
+
   // Hasheando a senha com bcrypt
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Criação do usuário com a senha hasheada
+  // Criação do usuário com a senha hasheada e tenantSubdomain do pastor
   return prisma.user.create({
     data: {
       ...data, // Mantém os outros campos
       password: hashedPassword, // Armazena a senha hasheada
+      tenantSubdomain, // Garante que o tenantSubdomain seja igual ao do pastor
     },
   });
 };

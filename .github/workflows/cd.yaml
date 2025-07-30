@@ -1,0 +1,60 @@
+name: CD to AKS
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+        environment:
+          description: "Ambiente (dev ou prod)"
+          required: true
+          default: "dev"
+
+env:
+  TF_VAR_location: "eastus"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.7
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Terraform Init
+        working-directory: ./infra
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: ./infra
+        run: terraform plan -var-file=terraform.tfvars
+
+      - name: Terraform Apply
+        working-directory: ./infra
+        run: terraform apply -auto-approve -var-file=terraform.tfvars
+
+      - name: Set Kubeconfig
+        working-directory: ./infra
+        run: |
+          echo "${{ steps.deploy.outputs.kube_config }}" > kubeconfig
+          export KUBECONFIG=$(pwd)/kubeconfig
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      - name: Deploy App with Helm
+        run: |
+          helm upgrade --install church-api ./helm/church-api \
+            -f helm/church-api/values-${{ github.event.inputs.environment }}.yaml \
+            --namespace ${{ github.event.inputs.environment }} --create-namespace
+

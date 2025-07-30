@@ -27,3 +27,18 @@ variable "node_size" {
   type        = string
   default     = "Standard_DS2_v2"
 }
+
+variable "dns_prefix" {
+  type        = string
+  description = "Prefixo DNS do AKS"
+}
+
+variable "node_min_count" {
+  type        = number
+  default     = 1
+}
+
+variable "node_max_count" {
+  type        = number
+  default     = 3
+}

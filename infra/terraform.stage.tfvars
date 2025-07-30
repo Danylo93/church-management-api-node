@@ -4,3 +4,6 @@ cluster_name = "church-api-aks-stage"
 resource_group_name = "rg-church-api-stage"
 node_count   = 2
 node_size    = "Standard_DS2_v3"
+dns_prefix   = "church-api-stage"
+node_min_count = 2
+node_max_count = 3

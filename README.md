@@ -10,6 +10,20 @@ Abaixo estão as instruções de uso nos ambientes **dev**, **stage** e **prod**
 
 A imagem Docker permite escolher qual arquivo de ambiente será copiado através do argumento `ENV_FILE`.
 
+## Multi-tenancy
+Este projeto suporta multi-tenant usando subdomínios. Cada requisição deve conter o cabeçalho `x-tenant-subdomain` informando o subdomínio do tenant.
+
+O middleware resolve a conexão do banco de dados para o tenant e disponibiliza um cliente Prisma na propriedade `req.prisma`.
+
+Exemplo de chamada usando `curl`:
+
+```bash
+curl -H "x-tenant-subdomain: minhaigreja" \
+     -X POST http://localhost:3000/api/auth/login \
+     -d '{"email":"admin@igreja.com","password":"senha"}'
+```
+
+
 ---
 
 ## Desenvolvimento local

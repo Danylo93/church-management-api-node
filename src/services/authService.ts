@@ -3,8 +3,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import axios from "axios";
 
-const prisma = new PrismaClient();
-
 // Configuração do JWT
 const JWT_SECRET = process.env.JWT_SECRET || "3f8dcb8b7bb7b9f8b5b4f95c6c7489e6b49d420315a469d9cf8c36fef8d1c743";
 
@@ -13,11 +11,19 @@ const validatePassword = async (inputPassword: string, storedPassword: string): 
   return bcrypt.compare(inputPassword, storedPassword); // Comparando as senhas hashadas
 };
 
-export const loginUserService = async (email: string, password: string) => {
+export const loginUserService = async (
+  prisma: PrismaClient,
+  email: string,
+  password: string,
+  tenantSubdomain: string
+) => {
   try {
-    // Verifica se o usuário existe no banco de dados do app
-    const user = await prisma.user.findUnique({
-      where: { email },
+    // Verifica se o usuário existe no banco de dados do tenant
+    const user = await prisma.user.findFirst({
+      where: {
+        email,
+        tenantSubdomain,
+      },
     });
 
     if (!user) {
@@ -26,11 +32,11 @@ export const loginUserService = async (email: string, password: string) => {
     }
 
     // Consultar o status do tenant no SaaS
-    const tenantSubdomain = user.tenantSubdomain; // Subdomínio do tenant
+    const userTenant = user.tenantSubdomain; // Subdomínio do tenant
 
     // Consultar o status do tenant via API do SaaS
     const { data: tenantStatus } = await axios.get(
-      `http://localhost:5000/api/tenants/status/${tenantSubdomain}`  // Altere o URL para o endpoint do SaaS
+      `http://localhost:5000/api/tenants/status/${userTenant}`  // Altere o URL para o endpoint do SaaS
     );
 
     // Verifica se o tenant está ativo
@@ -51,7 +57,7 @@ export const loginUserService = async (email: string, password: string) => {
     const token = jwt.sign(
       {
         userId: user.id,
-        tenantSubdomain: user.tenantSubdomain,  // Usando o tenantSubdomain em vez do tenantId
+        tenantSubdomain: userTenant,  // Usando o tenant do usuário
         email: user.email
       },
       JWT_SECRET,  // Sua chave secreta do JWT

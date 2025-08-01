@@ -1,6 +1,5 @@
 // src/index.ts
 
-import { PrismaClient } from '@prisma/client';
 import express from 'express';
 import userRoutes from './routes/userRoutes';
 import cellReportRoutes from './routes/cellReportRoutes';
@@ -10,14 +9,15 @@ import eventRoutes from './routes/eventRoutes';
 import memberRoutes from './routes/memberRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import registrationRoutes from './routes/registration.routes';
+import { tenantMiddleware } from './middleware/tenantMiddleware';
 
 
-const prisma = new PrismaClient();
 const app = express();
 
 // Use o CORS de forma global ou apenas nas rotas específicas
 app.use(cors()); // Aplica CORS globalmente
 app.use(express.json());
+app.use(tenantMiddleware);
 
 // Rotas de autenticação
 app.use('/api/auth', authRoutes);

@@ -13,8 +13,11 @@ export const loginUser = async (req: Request, res: Response) => {
       });
     }
 
+    // Subdomínio do tenant vem do middleware
+    const tenant = req.tenantSubdomain as string;
+
     // Chama o serviço de login para o usuário
-    const result = await loginUserService(email, password);
+    const result = await loginUserService(req.prisma!, email, password, tenant);
 
     // Retorna o token JWT gerado
     return res.json({
